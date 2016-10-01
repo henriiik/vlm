@@ -8606,13 +8606,13 @@ var _user$project$Main$asPx = function (x) {
 var _user$project$Main$statusBarText = function (model) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
-		'mode:',
+		'--',
 		A2(
 			_elm_lang$core$Basics_ops['++'],
 			_elm_lang$core$Basics$toString(model.mode),
 			A2(
 				_elm_lang$core$Basics_ops['++'],
-				', shift:',
+				'-- , shift:',
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					_elm_lang$core$Basics$toString(model.shift),
@@ -8695,9 +8695,6 @@ var _user$project$Main$bufferPre = function (editor) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						{ctor: '_Tuple2', _0: 'background', _1: 'white'},
-						{ctor: '_Tuple2', _0: 'font-size', _1: '15px'},
-						{ctor: '_Tuple2', _0: 'line-height', _1: '15px'},
-						{ctor: '_Tuple2', _0: 'margin', _1: '0px'},
 						{
 						ctor: '_Tuple2',
 						_0: 'width',
@@ -8734,7 +8731,7 @@ var _user$project$Main$view = function (model) {
 				_user$project$Main$renderCursor(model),
 				_user$project$Main$bufferPre(model.editor),
 				A2(
-				_elm_lang$html$Html$div,
+				_elm_lang$html$Html$pre,
 				_elm_lang$core$Native_List.fromArray(
 					[]),
 				_elm_lang$core$Native_List.fromArray(
@@ -8813,7 +8810,7 @@ var _user$project$Main$right = function (editor) {
 var _user$project$Main$insertChar = F2(
 	function (code, editor) {
 		var editor = _user$project$Main$right(editor);
-		var col = editor.cursor.col;
+		var col = editor.cursor.col - 1;
 		var row = editor.cursor.row;
 		var oldLine = A2(
 			_elm_lang$core$Maybe$withDefault,
@@ -8848,7 +8845,7 @@ var _user$project$Main$left = function (editor) {
 };
 var _user$project$Main$deleteChar = function (editor) {
 	var editor = _user$project$Main$left(editor);
-	var col = editor.cursor.col;
+	var col = editor.cursor.col + 1;
 	var row = editor.cursor.row;
 	var oldLine = A2(
 		_elm_lang$core$Maybe$withDefault,

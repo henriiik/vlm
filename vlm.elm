@@ -111,7 +111,7 @@ deleteChar editor =
             editor.cursor.row
 
         col =
-            editor.cursor.col
+            editor.cursor.col + 1
 
         oldLine =
             Maybe.withDefault "" (Array.get row editor.buffer)
@@ -135,7 +135,7 @@ insertChar code editor =
             editor.cursor.row
 
         col =
-            editor.cursor.col
+            editor.cursor.col - 1
 
         oldLine =
             Maybe.withDefault "" (Array.get row editor.buffer)
@@ -307,7 +307,7 @@ view model =
         ]
         [ (renderCursor model)
         , (bufferPre model.editor)
-        , div [] [ text (statusBarText model) ]
+        , pre [] [ text (statusBarText model) ]
         , pre [] [ text model.log ]
         ]
 
@@ -317,9 +317,6 @@ bufferPre editor =
     pre
         [ style
             [ ( "background", "white" )
-            , ( "font-size", "15px" )
-            , ( "line-height", "15px" )
-            , ( "margin", "0px" )
             , ( "width", (asPx (editor.width * 15)) )
             , ( "height", (asPx (editor.height * 15)) )
             ]
@@ -361,7 +358,7 @@ cursorWidth cursor mode =
 
 statusBarText : Model -> String
 statusBarText model =
-    "mode:" ++ (toString model.mode) ++ ", shift:" ++ (toString model.shift) ++ ", ctrl:" ++ (toString model.ctrl) ++ ", alt:" ++ (toString model.alt) ++ ", row:" ++ (toString model.editor.cursor.row) ++ ", col:" ++ (toString model.editor.cursor.col)
+    "--" ++ (toString model.mode) ++ "-- , shift:" ++ (toString model.shift) ++ ", ctrl:" ++ (toString model.ctrl) ++ ", alt:" ++ (toString model.alt) ++ ", row:" ++ (toString model.editor.cursor.row) ++ ", col:" ++ (toString model.editor.cursor.col)
 
 
 asPx : Int -> String
