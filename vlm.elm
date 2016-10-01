@@ -34,49 +34,6 @@ type alias Cursor =
     }
 
 
-left : Cursor -> Cursor
-left cursor =
-    { cursor | col = (max (cursor.col - 1) 0) }
-
-
-right : Cursor -> Cursor
-right cursor =
-    { cursor | col = cursor.col + 1 }
-
-
-down : Cursor -> Cursor
-down cursor =
-    { cursor | row = cursor.row + 1 }
-
-
-up : Cursor -> Cursor
-up cursor =
-    { cursor | row = (max (cursor.row - 1) 0) }
-
-
-deleteChar : Model -> Model
-deleteChar model =
-    let
-        oldLine =
-            Maybe.withDefault "" (Array.get model.cursor.row model.buffer)
-
-        newLine =
-            (String.left (model.cursor.col - 1) oldLine) ++ (String.right ((String.length oldLine) - model.cursor.col) oldLine)
-    in
-        { model | buffer = (Array.set model.cursor.row newLine model.buffer), cursor = (left model.cursor) }
-
-
-insertChar : Keyboard.KeyCode -> Model -> Model
-insertChar code model =
-    let
-        oldLine =
-            Maybe.withDefault "" (Array.get model.cursor.row model.buffer)
-
-        newLine =
-            (String.left (model.cursor.col) oldLine) ++ (fromCode code) ++ (String.right ((String.length oldLine) - model.cursor.col) oldLine)
-    in
-        { model | buffer = (Array.set model.cursor.row newLine model.buffer), cursor = (right model.cursor) }
-
 type alias Buffer =
     Array.Array String
 
@@ -88,9 +45,9 @@ type alias Editor =
     , height : Int
     }
 
+
 type alias Model =
-    { buffer : Array.Array String
-    , cursor : Cursor
+    { editor : Editor
     , log : String
     , mode : Mode
     , ctrl : Bool
@@ -99,9 +56,115 @@ type alias Model =
     }
 
 
+left : Editor -> Editor
+left editor =
+    let
+        col =
+            (max (cursor.col - 1) 0)
+
+        cursor =
+            editor.cursor
+    in
+        { editor | cursor = { cursor | col = col } }
+
+
+right : Editor -> Editor
+right editor =
+    let
+        col =
+            (min (cursor.col + 1) editor.width)
+
+        cursor =
+            editor.cursor
+    in
+        { editor | cursor = { cursor | col = col } }
+
+
+down : Editor -> Editor
+down editor =
+    let
+        row =
+            (min (cursor.row + 1) (editor.height - 1))
+
+        cursor =
+            editor.cursor
+    in
+        { editor | cursor = { cursor | row = row } }
+
+
+up : Editor -> Editor
+up editor =
+    let
+        row =
+            (max (cursor.row - 1) 0)
+
+        cursor =
+            editor.cursor
+    in
+        { editor | cursor = { cursor | row = row } }
+
+
+deleteChar : Editor -> Editor
+deleteChar editor =
+    let
+        row =
+            editor.cursor.row
+
+        col =
+            editor.cursor.col
+
+        oldLine =
+            Maybe.withDefault "" (Array.get row editor.buffer)
+
+        newLine =
+            (String.left (col - 1) oldLine) ++ (String.right ((String.length oldLine) - col) oldLine)
+
+        buffer =
+            (Array.set row newLine editor.buffer)
+
+        editor =
+            (left editor)
+    in
+        { editor | buffer = buffer }
+
+
+insertChar : Keyboard.KeyCode -> Editor -> Editor
+insertChar code editor =
+    let
+        row =
+            editor.cursor.row
+
+        col =
+            editor.cursor.col
+
+        oldLine =
+            Maybe.withDefault "" (Array.get row editor.buffer)
+
+        newLine =
+            (String.left (col) oldLine) ++ (fromCode code) ++ (String.right ((String.length oldLine) - col) oldLine)
+
+        editor =
+            (right editor)
+    in
+        { editor | buffer = (Array.set row newLine editor.buffer) }
+
+
 init : ( Model, Cmd Msg )
 init =
-    ( Model (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line" ]) (Cursor 0 0) "this is the log" Normal False False False, Cmd.none )
+    ( Model
+        (Editor
+            (Cursor 0 0)
+            (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line" ])
+            40
+            10
+        )
+        "this is the log"
+        Normal
+        False
+        False
+        False
+    , Cmd.none
+    )
 
 
 
@@ -160,19 +223,19 @@ newModifiers isDown code model =
 
                             -- backspace
                             8 ->
-                                deleteChar model
+                                { model | editor = deleteChar model.editor }
 
                             -- enter
                             -- 13 ->
-                            -- { model | buffer = (model.buffer ++ "\n") }
+                            -- { model | buffer = (model.editor.buffer ++ "\n") }
                             _ ->
-                                insertChar code model
+                                { model | editor = insertChar code model.editor }
 
                     _ ->
                         case code of
                             -- a
                             65 ->
-                                { model | mode = Insert, cursor = (right model.cursor) }
+                                { model | mode = Insert, editor = (right model.editor) }
 
                             -- i
                             73 ->
@@ -180,19 +243,19 @@ newModifiers isDown code model =
 
                             -- h
                             72 ->
-                                { model | cursor = (left model.cursor) }
+                                { model | editor = (left model.editor) }
 
                             -- j
                             74 ->
-                                { model | cursor = (down model.cursor) }
+                                { model | editor = (down model.editor) }
 
                             -- k
                             75 ->
-                                { model | cursor = (up model.cursor) }
+                                { model | editor = (up model.editor) }
 
                             -- l
                             76 ->
-                                { model | cursor = (right model.cursor) }
+                                { model | editor = (right model.editor) }
 
                             _ ->
                                 model
@@ -243,23 +306,25 @@ view model =
             ]
         ]
         [ (renderCursor model)
-        , (bufferPre model)
+        , (bufferPre model.editor)
         , div [] [ text (statusBarText model) ]
         , pre [] [ text model.log ]
         ]
 
 
-bufferPre : Model -> Html Msg
-bufferPre model =
+bufferPre : Editor -> Html Msg
+bufferPre editor =
     pre
         [ style
-            [ ( "border", "solid 1px black" )
+            [ ( "background", "white" )
             , ( "font-size", "15px" )
             , ( "line-height", "15px" )
             , ( "margin", "0px" )
+            , ( "width", (asPx (editor.width * 15)) )
+            , ( "height", (asPx (editor.height * 15)) )
             ]
         ]
-        [ text (Array.foldr joinArray "" model.buffer) ]
+        [ text (Array.foldr joinArray "" editor.buffer) ]
 
 
 joinArray : String -> String -> String
@@ -272,11 +337,11 @@ renderCursor model =
     div
         [ style
             [ ( "width"
-              , cursorWidth model.cursor model.mode
+              , cursorWidth model.editor.cursor model.mode
               )
-            , ( "left", (toString (model.cursor.col * 9)) ++ "px" )
+            , ( "left", asPx (model.editor.cursor.col * 9) )
             , ( "height", "15px" )
-            , ( "top", (toString (model.cursor.row * 15)) ++ "px" )
+            , ( "top", asPx (model.editor.cursor.row * 15) )
             , ( "position", "absolute" )
             , ( "background-color", "rgba(0,0,0,0.25)" )
             ]
@@ -296,4 +361,9 @@ cursorWidth cursor mode =
 
 statusBarText : Model -> String
 statusBarText model =
-    "mode:" ++ (toString model.mode) ++ ", shift:" ++ (toString model.shift) ++ ", ctrl:" ++ (toString model.ctrl) ++ ", alt:" ++ (toString model.alt) ++ ", row:" ++ (toString model.cursor.row) ++ ", col:" ++ (toString model.cursor.col)
+    "mode:" ++ (toString model.mode) ++ ", shift:" ++ (toString model.shift) ++ ", ctrl:" ++ (toString model.ctrl) ++ ", alt:" ++ (toString model.alt) ++ ", row:" ++ (toString model.editor.cursor.row) ++ ", col:" ++ (toString model.editor.cursor.col)
+
+
+asPx : Int -> String
+asPx x =
+    (toString x) ++ "px"

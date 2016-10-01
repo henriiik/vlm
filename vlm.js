@@ -8597,6 +8597,12 @@ var _elm_lang$keyboard$Keyboard$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Keyboard'] = {pkg: 'elm-lang/keyboard', init: _elm_lang$keyboard$Keyboard$init, onEffects: _elm_lang$keyboard$Keyboard$onEffects, onSelfMsg: _elm_lang$keyboard$Keyboard$onSelfMsg, tag: 'sub', subMap: _elm_lang$keyboard$Keyboard$subMap};
 
+var _user$project$Main$asPx = function (x) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(x),
+		'px');
+};
 var _user$project$Main$statusBarText = function (model) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
@@ -8627,11 +8633,11 @@ var _user$project$Main$statusBarText = function (model) {
 										', row:',
 										A2(
 											_elm_lang$core$Basics_ops['++'],
-											_elm_lang$core$Basics$toString(model.cursor.row),
+											_elm_lang$core$Basics$toString(model.editor.cursor.row),
 											A2(
 												_elm_lang$core$Basics_ops['++'],
 												', col:',
-												_elm_lang$core$Basics$toString(model.cursor.col))))))))))));
+												_elm_lang$core$Basics$toString(model.editor.cursor.col))))))))))));
 };
 var _user$project$Main$cursorWidth = F2(
 	function (cursor, mode) {
@@ -8653,24 +8659,18 @@ var _user$project$Main$renderCursor = function (model) {
 						{
 						ctor: '_Tuple2',
 						_0: 'width',
-						_1: A2(_user$project$Main$cursorWidth, model.cursor, model.mode)
+						_1: A2(_user$project$Main$cursorWidth, model.editor.cursor, model.mode)
 					},
 						{
 						ctor: '_Tuple2',
 						_0: 'left',
-						_1: A2(
-							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(model.cursor.col * 9),
-							'px')
+						_1: _user$project$Main$asPx(model.editor.cursor.col * 9)
 					},
 						{ctor: '_Tuple2', _0: 'height', _1: '15px'},
 						{
 						ctor: '_Tuple2',
 						_0: 'top',
-						_1: A2(
-							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(model.cursor.row * 15),
-							'px')
+						_1: _user$project$Main$asPx(model.editor.cursor.row * 15)
 					},
 						{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
 						{ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(0,0,0,0.25)'}
@@ -8686,7 +8686,7 @@ var _user$project$Main$joinArray = F2(
 			a,
 			A2(_elm_lang$core$Basics_ops['++'], '\n', b));
 	});
-var _user$project$Main$bufferPre = function (model) {
+var _user$project$Main$bufferPre = function (editor) {
 	return A2(
 		_elm_lang$html$Html$pre,
 		_elm_lang$core$Native_List.fromArray(
@@ -8694,16 +8694,26 @@ var _user$project$Main$bufferPre = function (model) {
 				_elm_lang$html$Html_Attributes$style(
 				_elm_lang$core$Native_List.fromArray(
 					[
-						{ctor: '_Tuple2', _0: 'border', _1: 'solid 1px black'},
+						{ctor: '_Tuple2', _0: 'background', _1: 'white'},
 						{ctor: '_Tuple2', _0: 'font-size', _1: '15px'},
 						{ctor: '_Tuple2', _0: 'line-height', _1: '15px'},
-						{ctor: '_Tuple2', _0: 'margin', _1: '0px'}
+						{ctor: '_Tuple2', _0: 'margin', _1: '0px'},
+						{
+						ctor: '_Tuple2',
+						_0: 'width',
+						_1: _user$project$Main$asPx(editor.width * 15)
+					},
+						{
+						ctor: '_Tuple2',
+						_0: 'height',
+						_1: _user$project$Main$asPx(editor.height * 15)
+					}
 					]))
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$html$Html$text(
-				A3(_elm_lang$core$Array$foldr, _user$project$Main$joinArray, '', model.buffer))
+				A3(_elm_lang$core$Array$foldr, _user$project$Main$joinArray, '', editor.buffer))
 			]));
 };
 var _user$project$Main$view = function (model) {
@@ -8722,7 +8732,7 @@ var _user$project$Main$view = function (model) {
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_user$project$Main$renderCursor(model),
-				_user$project$Main$bufferPre(model),
+				_user$project$Main$bufferPre(model.editor),
 				A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
@@ -8767,71 +8777,94 @@ var _user$project$Main$newLog = F2(
 						_user$project$Main$fromCode(code),
 						A2(_elm_lang$core$Basics_ops['++'], '\n', log)))));
 	});
-var _user$project$Main$up = function (cursor) {
+var _user$project$Main$up = function (editor) {
+	var cursor = editor.cursor;
+	var row = A2(_elm_lang$core$Basics$max, cursor.row - 1, 0);
 	return _elm_lang$core$Native_Utils.update(
-		cursor,
+		editor,
 		{
-			row: A2(_elm_lang$core$Basics$max, cursor.row - 1, 0)
+			cursor: _elm_lang$core$Native_Utils.update(
+				cursor,
+				{row: row})
 		});
 };
-var _user$project$Main$down = function (cursor) {
+var _user$project$Main$down = function (editor) {
+	var cursor = editor.cursor;
+	var row = A2(_elm_lang$core$Basics$min, cursor.row + 1, editor.height - 1);
 	return _elm_lang$core$Native_Utils.update(
-		cursor,
-		{row: cursor.row + 1});
+		editor,
+		{
+			cursor: _elm_lang$core$Native_Utils.update(
+				cursor,
+				{row: row})
+		});
 };
-var _user$project$Main$right = function (cursor) {
+var _user$project$Main$right = function (editor) {
+	var cursor = editor.cursor;
+	var col = A2(_elm_lang$core$Basics$min, cursor.col + 1, editor.width);
 	return _elm_lang$core$Native_Utils.update(
-		cursor,
-		{col: cursor.col + 1});
+		editor,
+		{
+			cursor: _elm_lang$core$Native_Utils.update(
+				cursor,
+				{col: col})
+		});
 };
 var _user$project$Main$insertChar = F2(
-	function (code, model) {
+	function (code, editor) {
+		var editor = _user$project$Main$right(editor);
+		var col = editor.cursor.col;
+		var row = editor.cursor.row;
 		var oldLine = A2(
 			_elm_lang$core$Maybe$withDefault,
 			'',
-			A2(_elm_lang$core$Array$get, model.cursor.row, model.buffer));
+			A2(_elm_lang$core$Array$get, row, editor.buffer));
 		var newLine = A2(
 			_elm_lang$core$Basics_ops['++'],
-			A2(_elm_lang$core$String$left, model.cursor.col, oldLine),
+			A2(_elm_lang$core$String$left, col, oldLine),
 			A2(
 				_elm_lang$core$Basics_ops['++'],
 				_user$project$Main$fromCode(code),
 				A2(
 					_elm_lang$core$String$right,
-					_elm_lang$core$String$length(oldLine) - model.cursor.col,
+					_elm_lang$core$String$length(oldLine) - col,
 					oldLine)));
 		return _elm_lang$core$Native_Utils.update(
-			model,
+			editor,
 			{
-				buffer: A3(_elm_lang$core$Array$set, model.cursor.row, newLine, model.buffer),
-				cursor: _user$project$Main$right(model.cursor)
+				buffer: A3(_elm_lang$core$Array$set, row, newLine, editor.buffer)
 			});
 	});
-var _user$project$Main$left = function (cursor) {
+var _user$project$Main$left = function (editor) {
+	var cursor = editor.cursor;
+	var col = A2(_elm_lang$core$Basics$max, cursor.col - 1, 0);
 	return _elm_lang$core$Native_Utils.update(
-		cursor,
+		editor,
 		{
-			col: A2(_elm_lang$core$Basics$max, cursor.col - 1, 0)
+			cursor: _elm_lang$core$Native_Utils.update(
+				cursor,
+				{col: col})
 		});
 };
-var _user$project$Main$deleteChar = function (model) {
+var _user$project$Main$deleteChar = function (editor) {
+	var editor = _user$project$Main$left(editor);
+	var col = editor.cursor.col;
+	var row = editor.cursor.row;
 	var oldLine = A2(
 		_elm_lang$core$Maybe$withDefault,
 		'',
-		A2(_elm_lang$core$Array$get, model.cursor.row, model.buffer));
+		A2(_elm_lang$core$Array$get, row, editor.buffer));
 	var newLine = A2(
 		_elm_lang$core$Basics_ops['++'],
-		A2(_elm_lang$core$String$left, model.cursor.col - 1, oldLine),
+		A2(_elm_lang$core$String$left, col - 1, oldLine),
 		A2(
 			_elm_lang$core$String$right,
-			_elm_lang$core$String$length(oldLine) - model.cursor.col,
+			_elm_lang$core$String$length(oldLine) - col,
 			oldLine));
+	var buffer = A3(_elm_lang$core$Array$set, row, newLine, editor.buffer);
 	return _elm_lang$core$Native_Utils.update(
-		model,
-		{
-			buffer: A3(_elm_lang$core$Array$set, model.cursor.row, newLine, model.buffer),
-			cursor: _user$project$Main$left(model.cursor)
-		});
+		editor,
+		{buffer: buffer});
 };
 var _user$project$Main$Cursor = F2(
 	function (a, b) {
@@ -8841,20 +8874,24 @@ var _user$project$Main$Editor = F4(
 	function (a, b, c, d) {
 		return {cursor: a, buffer: b, width: c, height: d};
 	});
-var _user$project$Main$Model = F7(
-	function (a, b, c, d, e, f, g) {
-		return {buffer: a, cursor: b, log: c, mode: d, ctrl: e, shift: f, alt: g};
+var _user$project$Main$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {editor: a, log: b, mode: c, ctrl: d, shift: e, alt: f};
 	});
 var _user$project$Main$Insert = {ctor: 'Insert'};
 var _user$project$Main$Normal = {ctor: 'Normal'};
 var _user$project$Main$init = {
 	ctor: '_Tuple2',
-	_0: A7(
+	_0: A6(
 		_user$project$Main$Model,
-		_elm_lang$core$Array$fromList(
-			_elm_lang$core$Native_List.fromArray(
-				['this is the buffer', 'this is the second line', 'this is the third line'])),
-		A2(_user$project$Main$Cursor, 0, 0),
+		A4(
+			_user$project$Main$Editor,
+			A2(_user$project$Main$Cursor, 0, 0),
+			_elm_lang$core$Array$fromList(
+				_elm_lang$core$Native_List.fromArray(
+					['this is the buffer', 'this is the second line', 'this is the third line'])),
+			40,
+			10),
 		'this is the log',
 		_user$project$Main$Normal,
 		false,
@@ -8889,9 +8926,17 @@ var _user$project$Main$newModifiers = F3(
 									model,
 									{mode: _user$project$Main$Normal});
 							case 8:
-								return _user$project$Main$deleteChar(model);
+								return _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										editor: _user$project$Main$deleteChar(model.editor)
+									});
 							default:
-								return A2(_user$project$Main$insertChar, code, model);
+								return _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										editor: A2(_user$project$Main$insertChar, code, model.editor)
+									});
 						}
 					} else {
 						var _p5 = code;
@@ -8901,7 +8946,7 @@ var _user$project$Main$newModifiers = F3(
 									model,
 									{
 										mode: _user$project$Main$Insert,
-										cursor: _user$project$Main$right(model.cursor)
+										editor: _user$project$Main$right(model.editor)
 									});
 							case 73:
 								return _elm_lang$core$Native_Utils.update(
@@ -8911,25 +8956,25 @@ var _user$project$Main$newModifiers = F3(
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										cursor: _user$project$Main$left(model.cursor)
+										editor: _user$project$Main$left(model.editor)
 									});
 							case 74:
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										cursor: _user$project$Main$down(model.cursor)
+										editor: _user$project$Main$down(model.editor)
 									});
 							case 75:
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										cursor: _user$project$Main$up(model.cursor)
+										editor: _user$project$Main$up(model.editor)
 									});
 							case 76:
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										cursor: _user$project$Main$right(model.cursor)
+										editor: _user$project$Main$right(model.editor)
 									});
 							default:
 								return model;
