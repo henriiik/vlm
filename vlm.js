@@ -9265,7 +9265,12 @@ var _henriiik$vlm$Main$newModifiers = F3(
 										editor: _henriiik$vlm$Main$motionWordEnd(model.editor)
 									});
 							case 73:
-								return _elm_lang$core$Native_Utils.update(
+								return model.shift ? _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										mode: _henriiik$vlm$Main$Insert,
+										editor: _henriiik$vlm$Main$cursorStart(model.editor)
+									}) : _elm_lang$core$Native_Utils.update(
 									model,
 									{mode: _henriiik$vlm$Main$Insert});
 							case 72:

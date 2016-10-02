@@ -340,7 +340,10 @@ newModifiers isDown code model =
 
                             -- i
                             73 ->
-                                { model | mode = Insert }
+                                if model.shift then
+                                    { model | mode = Insert, editor = cursorStart model.editor }
+                                else
+                                    { model | mode = Insert }
 
                             -- h
                             72 ->
