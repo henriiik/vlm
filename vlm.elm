@@ -1,15 +1,15 @@
 module Main exposing (..)
 
+import Array
 import Char
+import Cursor exposing (..)
+import Debug
 import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (style)
-import Keyboard
-import String
-import Array
+import Keyboard exposing (KeyCode)
 import Regex
-import Debug
-import Cursor exposing (..)
+import String
 
 
 main : Program Never
@@ -234,7 +234,7 @@ insertAt i a b =
         fst split ++ a ++ snd split
 
 
-insertChar : Keyboard.KeyCode -> Editor -> Editor
+insertChar : KeyCode -> Editor -> Editor
 insertChar c e =
     e
         |> replaceCurrentLine (insertAt e.cursor.col (fromCode c) (currentLine e))
@@ -264,8 +264,8 @@ init =
 
 
 type Msg
-    = KeyDown Keyboard.KeyCode
-    | KeyUp Keyboard.KeyCode
+    = KeyDown KeyCode
+    | KeyUp KeyCode
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -292,109 +292,109 @@ update msg model =
                 ( { model | mode = mode }, Cmd.none )
 
 
-newModifiers : Bool -> Keyboard.KeyCode -> Model -> Model
-newModifiers isDown code model =
-    case code of
+newModifiers : Bool -> KeyCode -> Model -> Model
+newModifiers isDown c m =
+    case c of
         16 ->
-            { model | shift = isDown }
+            { m | shift = isDown }
 
         17 ->
-            { model | ctrl = isDown }
+            { m | ctrl = isDown }
 
         18 ->
-            { model | alt = isDown }
+            { m | alt = isDown }
 
         _ ->
             if isDown then
-                case model.mode of
+                case m.mode of
                     Insert ->
-                        case code of
+                        case c of
                             -- esc
                             27 ->
-                                { model | mode = Normal }
+                                { m | mode = Normal }
 
                             -- backspace
                             8 ->
-                                { model | editor = deleteChar model.editor }
+                                { m | editor = deleteChar m.editor }
 
                             -- enter
                             -- 13 ->
-                            -- { model | buffer = (model.editor.buffer ++ "\n") }
+                            -- { m | buffer = (m.editor.buffer ++ "\n") }
                             _ ->
-                                { model | editor = insertChar code model.editor }
+                                { m | editor = insertChar c m.editor }
 
                     _ ->
-                        case code of
+                        case c of
                             -- a
                             65 ->
-                                if model.shift then
-                                    { model | mode = Insert, editor = cursorEnd model.editor }
+                                if m.shift then
+                                    { m | mode = Insert, editor = cursorEnd m.editor }
                                 else
-                                    { model | mode = Insert, editor = cursorRight model.editor }
+                                    { m | mode = Insert, editor = cursorRight m.editor }
 
                             -- b
                             66 ->
-                                { model | editor = motionWordBack model.editor }
+                                { m | editor = motionWordBack m.editor }
 
                             -- e
                             69 ->
-                                { model | editor = motionWordEnd model.editor }
+                                { m | editor = motionWordEnd m.editor }
 
                             -- i
                             73 ->
-                                if model.shift then
-                                    { model | mode = Insert, editor = cursorStart model.editor }
+                                if m.shift then
+                                    { m | mode = Insert, editor = cursorStart m.editor }
                                 else
-                                    { model | mode = Insert }
+                                    { m | mode = Insert }
 
                             -- h
                             72 ->
-                                { model | editor = cursorLeft model.editor }
+                                { m | editor = cursorLeft m.editor }
 
                             -- j
                             74 ->
-                                { model | editor = cursorDown model.editor }
+                                { m | editor = cursorDown m.editor }
 
                             -- k
                             75 ->
-                                { model | editor = cursorUp model.editor }
+                                { m | editor = cursorUp m.editor }
 
                             -- l
                             76 ->
-                                { model | editor = cursorRight model.editor }
+                                { m | editor = cursorRight m.editor }
 
                             -- w
                             87 ->
-                                { model | editor = motionWord model.editor }
+                                { m | editor = motionWord m.editor }
 
                             -- x
                             88 ->
-                                { model
+                                { m
                                     | editor =
-                                        model.editor
+                                        m.editor
                                             |> cursorRight
                                             |> deleteChar
                                 }
 
                             _ ->
-                                model
+                                m
             else
-                model
+                m
 
 
-newLog : Keyboard.KeyCode -> String -> String
+newLog : KeyCode -> String -> String
 newLog code log =
     "up: " ++ (toString code) ++ " - " ++ (fromCode code) ++ "\n" ++ log
 
 
-newMode : Keyboard.KeyCode -> Mode -> Mode
+newMode : KeyCode -> Mode -> Mode
 newMode code mode =
     case code of
         _ ->
             mode
 
 
-fromCode : Keyboard.KeyCode -> String
+fromCode : KeyCode -> String
 fromCode code =
     String.fromChar (Char.fromCode code)
 

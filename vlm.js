@@ -9221,122 +9221,123 @@ var _henriiik$vlm$Main$init = {
 	_1: _elm_lang$core$Platform_Cmd$none
 };
 var _henriiik$vlm$Main$newModifiers = F3(
-	function (isDown, code, model) {
-		var _p7 = code;
+	function (isDown, c, m) {
+		var _p7 = c;
 		switch (_p7) {
 			case 16:
 				return _elm_lang$core$Native_Utils.update(
-					model,
+					m,
 					{shift: isDown});
 			case 17:
 				return _elm_lang$core$Native_Utils.update(
-					model,
+					m,
 					{ctrl: isDown});
 			case 18:
 				return _elm_lang$core$Native_Utils.update(
-					model,
+					m,
 					{alt: isDown});
 			default:
 				if (isDown) {
-					var _p8 = model.mode;
+					var _p8 = m.mode;
 					if (_p8.ctor === 'Insert') {
-						var _p9 = code;
+						var _p9 = c;
 						switch (_p9) {
 							case 27:
 								return _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{mode: _henriiik$vlm$Main$Normal});
 							case 8:
 								return _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{
-										editor: _henriiik$vlm$Main$deleteChar(model.editor)
+										editor: _henriiik$vlm$Main$deleteChar(m.editor)
 									});
 							default:
 								return _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{
-										editor: A2(_henriiik$vlm$Main$insertChar, code, model.editor)
+										editor: A2(_henriiik$vlm$Main$insertChar, c, m.editor)
 									});
 						}
 					} else {
-						var _p10 = code;
+						var _p10 = c;
 						switch (_p10) {
 							case 65:
-								return model.shift ? _elm_lang$core$Native_Utils.update(
-									model,
+								return m.shift ? _elm_lang$core$Native_Utils.update(
+									m,
 									{
 										mode: _henriiik$vlm$Main$Insert,
-										editor: _henriiik$vlm$Main$cursorEnd(model.editor)
+										editor: _henriiik$vlm$Main$cursorEnd(m.editor)
 									}) : _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{
 										mode: _henriiik$vlm$Main$Insert,
-										editor: _henriiik$vlm$Main$cursorRight(model.editor)
+										editor: _henriiik$vlm$Main$cursorRight(m.editor)
 									});
 							case 66:
 								return _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{
-										editor: _henriiik$vlm$Main$motionWordBack(model.editor)
+										editor: _henriiik$vlm$Main$motionWordBack(m.editor)
 									});
 							case 69:
 								return _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{
-										editor: _henriiik$vlm$Main$motionWordEnd(model.editor)
+										editor: _henriiik$vlm$Main$motionWordEnd(m.editor)
 									});
 							case 73:
-								return model.shift ? _elm_lang$core$Native_Utils.update(
-									model,
+								return m.shift ? _elm_lang$core$Native_Utils.update(
+									m,
 									{
 										mode: _henriiik$vlm$Main$Insert,
-										editor: _henriiik$vlm$Main$cursorStart(model.editor)
+										editor: _henriiik$vlm$Main$cursorStart(m.editor)
 									}) : _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{mode: _henriiik$vlm$Main$Insert});
 							case 72:
 								return _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{
-										editor: _henriiik$vlm$Main$cursorLeft(model.editor)
+										editor: _henriiik$vlm$Main$cursorLeft(m.editor)
 									});
 							case 74:
 								return _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{
-										editor: _henriiik$vlm$Main$cursorDown(model.editor)
+										editor: _henriiik$vlm$Main$cursorDown(m.editor)
 									});
 							case 75:
 								return _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{
-										editor: _henriiik$vlm$Main$cursorUp(model.editor)
+										editor: _henriiik$vlm$Main$cursorUp(m.editor)
 									});
 							case 76:
 								return _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{
-										editor: _henriiik$vlm$Main$cursorRight(model.editor)
+										editor: _henriiik$vlm$Main$cursorRight(m.editor)
 									});
 							case 87:
 								return _elm_lang$core$Native_Utils.update(
-									model,
+									m,
 									{
-										editor: _henriiik$vlm$Main$motionWord(model.editor)
+										editor: _henriiik$vlm$Main$motionWord(m.editor)
 									});
 							case 88:
-								var editor = _henriiik$vlm$Main$deleteChar(
-									_henriiik$vlm$Main$cursorRight(model.editor));
 								return _elm_lang$core$Native_Utils.update(
-									model,
-									{editor: editor});
+									m,
+									{
+										editor: _henriiik$vlm$Main$deleteChar(
+											_henriiik$vlm$Main$cursorRight(m.editor))
+									});
 							default:
-								return model;
+								return m;
 						}
 					}
 				} else {
-					return model;
+					return m;
 				}
 		}
 	});
