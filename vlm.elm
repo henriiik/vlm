@@ -9,6 +9,7 @@ import String
 import Array
 import Regex
 import Debug
+import Cursor exposing (..)
 
 
 main : Program Never
@@ -28,12 +29,6 @@ main =
 type Mode
     = Normal
     | Insert
-
-
-type alias Cursor =
-    { row : Int
-    , col : Int
-    }
 
 
 type alias Buffer =
@@ -62,108 +57,136 @@ left : Editor -> Editor
 left editor =
     let
         col =
-            (max (cursor.col - 1) 0)
-
-        cursor =
-            editor.cursor
+            (max (editor.cursor.col - 1) 0)
     in
-        { editor | cursor = { cursor | col = col } }
+        { editor | cursor = (withCol col editor.cursor) }
 
 
 right : Editor -> Editor
 right editor =
     let
         col =
-            (min (cursor.col + 1) editor.width)
-
-        cursor =
-            editor.cursor
+            (min (editor.cursor.col + 1) editor.width)
     in
-        { editor | cursor = { cursor | col = col } }
+        { editor | cursor = (withCol col editor.cursor) }
 
 
 down : Editor -> Editor
 down editor =
     let
         row =
-            (min (cursor.row + 1) (editor.height - 1))
-
-        cursor =
-            editor.cursor
+            (min (editor.cursor.row + 1) (editor.height - 1))
     in
-        { editor | cursor = { cursor | row = row } }
+        { editor | cursor = (withRow row editor.cursor) }
 
 
 up : Editor -> Editor
 up editor =
     let
         row =
-            (max (cursor.row - 1) 0)
-
-        cursor =
-            editor.cursor
+            (max (editor.cursor.row - 1) 0)
     in
-        { editor | cursor = { cursor | row = row } }
+        { editor | cursor = (withRow row editor.cursor) }
 
 
-motionWord : Editor -> Editor
-motionWord editor =
-    let
-        row =
-            editor.cursor.row
-
-        line =
-            (Maybe.withDefault "" (Array.get row editor.buffer))
-
-        col =
-            (nextWord line editor.cursor.col)
-
-        cursor =
-            editor.cursor
-    in
-        { editor | cursor = { cursor | col = col } }
+start : Editor -> Editor
+start e =
+    { e | cursor = (withCol 0 e.cursor) }
 
 
-motionWordBack : Editor -> Editor
-motionWordBack editor =
-    let
-        row =
-            editor.cursor.row
-
-        line =
-            (Maybe.withDefault "" (Array.get row editor.buffer))
-
-        col =
-            (prevWord line editor.cursor.col)
-
-        cursor =
-            editor.cursor
-    in
-        { editor | cursor = { cursor | col = col } }
+lineAt : Editor -> Int -> String
+lineAt editor i =
+    Maybe.withDefault "" (Array.get i editor.buffer)
 
 
-nextWord : String -> Int -> Int
-nextWord a i =
-    wordIndexes a
-        |> List.filter (\m -> m.index > i)
-        |> List.map (\m -> m.index)
-        |> List.head
-        |> Maybe.withDefault 0
+currentLine : Editor -> String
+currentLine editor =
+    lineAt editor editor.cursor.row
 
 
-prevWord : String -> Int -> Int
-prevWord a i =
-    wordIndexes a
-        |> List.reverse
-        |> List.filter (\m -> m.index < i)
-        |> List.map (\m -> m.index)
-        |> List.head
-        |> Maybe.withDefault 0
+prevLine : Editor -> String
+prevLine editor =
+    lineAt editor (editor.cursor.row - 1)
+
+
+nextLine : Editor -> String
+nextLine editor =
+    lineAt editor (editor.cursor.row + 1)
 
 
 wordIndexes : String -> List Regex.Match
 wordIndexes a =
     Regex.find Regex.All (Regex.regex "\\b\\w") a
+
+
+wordEndIndexes : String -> List Regex.Match
+wordEndIndexes a =
+    Regex.find Regex.All (Regex.regex "\\w\\b") a
+
+
+nextIndex : Int -> List Regex.Match -> Maybe Int
+nextIndex i list =
+    list
+        |> List.filter (\m -> m.index > i)
+        |> List.map (\m -> m.index)
+        |> List.head
+
+
+prevIndex : Int -> List Regex.Match -> Maybe Int
+prevIndex i list =
+    list
+        |> List.reverse
+        |> List.filter (\m -> m.index < i)
+        |> List.map (\m -> m.index)
+        |> List.head
+
+
+lastIndex : List Regex.Match -> Maybe Int
+lastIndex list =
+    list
+        |> List.reverse
+        |> List.map (\m -> m.index)
+        |> List.head
+
+
+motionWord : Editor -> Editor
+motionWord e =
+    case nextIndex e.cursor.col (wordIndexes (currentLine e)) of
+        Maybe.Just col ->
+            { e | cursor = withCol col e.cursor }
+
+        Maybe.Nothing ->
+            start (down e)
+
+
+motionWordBack : Editor -> Editor
+motionWordBack e =
+    case prevIndex e.cursor.col (wordIndexes (currentLine e)) of
+        Maybe.Just col ->
+            { e | cursor = withCol col e.cursor }
+
+        Maybe.Nothing ->
+            case lastIndex (wordIndexes (prevLine e)) of
+                Maybe.Just col ->
+                    up { e | cursor = withCol col e.cursor }
+
+                Maybe.Nothing ->
+                    up e
+
+
+motionWordEnd : Editor -> Editor
+motionWordEnd e =
+    case nextIndex e.cursor.col (wordEndIndexes (currentLine e)) of
+        Maybe.Just col ->
+            { e | cursor = withCol col e.cursor }
+
+        Maybe.Nothing ->
+            case nextIndex 0 (wordEndIndexes (nextLine e)) of
+                Maybe.Just col ->
+                    down { e | cursor = withCol col e.cursor }
+
+                Maybe.Nothing ->
+                    down e
 
 
 deleteChar : Editor -> Editor
@@ -297,7 +320,15 @@ newModifiers isDown code model =
                         case code of
                             -- a
                             65 ->
-                                { model | mode = Insert, editor = (right model.editor) }
+                                { model | mode = Insert, editor = right model.editor }
+
+                            -- b
+                            66 ->
+                                { model | editor = motionWordBack model.editor }
+
+                            -- e
+                            69 ->
+                                { model | editor = motionWordEnd model.editor }
 
                             -- i
                             73 ->
@@ -305,27 +336,23 @@ newModifiers isDown code model =
 
                             -- h
                             72 ->
-                                { model | editor = (left model.editor) }
+                                { model | editor = left model.editor }
 
                             -- j
                             74 ->
-                                { model | editor = (down model.editor) }
+                                { model | editor = down model.editor }
 
                             -- k
                             75 ->
-                                { model | editor = (up model.editor) }
+                                { model | editor = up model.editor }
 
                             -- l
                             76 ->
-                                { model | editor = (right model.editor) }
+                                { model | editor = right model.editor }
 
                             -- w
                             87 ->
-                                { model | editor = (motionWord model.editor) }
-
-                            -- b
-                            66 ->
-                                { model | editor = (motionWordBack model.editor) }
+                                { model | editor = motionWord model.editor }
 
                             _ ->
                                 model

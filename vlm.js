@@ -8732,13 +8732,30 @@ var _elm_lang$keyboard$Keyboard$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Keyboard'] = {pkg: 'elm-lang/keyboard', init: _elm_lang$keyboard$Keyboard$init, onEffects: _elm_lang$keyboard$Keyboard$onEffects, onSelfMsg: _elm_lang$keyboard$Keyboard$onSelfMsg, tag: 'sub', subMap: _elm_lang$keyboard$Keyboard$subMap};
 
-var _user$project$Main$asPx = function (x) {
+var _henriiik$vlm$Cursor$withRow = F2(
+	function (i, c) {
+		return _elm_lang$core$Native_Utils.update(
+			c,
+			{row: i});
+	});
+var _henriiik$vlm$Cursor$withCol = F2(
+	function (i, c) {
+		return _elm_lang$core$Native_Utils.update(
+			c,
+			{col: i});
+	});
+var _henriiik$vlm$Cursor$Cursor = F2(
+	function (a, b) {
+		return {row: a, col: b};
+	});
+
+var _henriiik$vlm$Main$asPx = function (x) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
 		_elm_lang$core$Basics$toString(x),
 		'px');
 };
-var _user$project$Main$statusBarText = function (model) {
+var _henriiik$vlm$Main$statusBarText = function (model) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
 		'--',
@@ -8774,7 +8791,7 @@ var _user$project$Main$statusBarText = function (model) {
 												', col:',
 												_elm_lang$core$Basics$toString(model.editor.cursor.col))))))))))));
 };
-var _user$project$Main$cursorWidth = F2(
+var _henriiik$vlm$Main$cursorWidth = F2(
 	function (cursor, mode) {
 		var _p0 = mode;
 		if (_p0.ctor === 'Insert') {
@@ -8783,7 +8800,7 @@ var _user$project$Main$cursorWidth = F2(
 			return '9px';
 		}
 	});
-var _user$project$Main$renderCursor = function (model) {
+var _henriiik$vlm$Main$renderCursor = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -8794,18 +8811,18 @@ var _user$project$Main$renderCursor = function (model) {
 						{
 						ctor: '_Tuple2',
 						_0: 'width',
-						_1: A2(_user$project$Main$cursorWidth, model.editor.cursor, model.mode)
+						_1: A2(_henriiik$vlm$Main$cursorWidth, model.editor.cursor, model.mode)
 					},
 						{
 						ctor: '_Tuple2',
 						_0: 'left',
-						_1: _user$project$Main$asPx(model.editor.cursor.col * 9)
+						_1: _henriiik$vlm$Main$asPx(model.editor.cursor.col * 9)
 					},
 						{ctor: '_Tuple2', _0: 'height', _1: '15px'},
 						{
 						ctor: '_Tuple2',
 						_0: 'top',
-						_1: _user$project$Main$asPx(model.editor.cursor.row * 15)
+						_1: _henriiik$vlm$Main$asPx(model.editor.cursor.row * 15)
 					},
 						{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
 						{ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(0,0,0,0.25)'}
@@ -8814,14 +8831,14 @@ var _user$project$Main$renderCursor = function (model) {
 		_elm_lang$core$Native_List.fromArray(
 			[]));
 };
-var _user$project$Main$joinArray = F2(
+var _henriiik$vlm$Main$joinArray = F2(
 	function (a, b) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
 			a,
 			A2(_elm_lang$core$Basics_ops['++'], '\n', b));
 	});
-var _user$project$Main$bufferPre = function (editor) {
+var _henriiik$vlm$Main$bufferPre = function (editor) {
 	return A2(
 		_elm_lang$html$Html$pre,
 		_elm_lang$core$Native_List.fromArray(
@@ -8833,22 +8850,22 @@ var _user$project$Main$bufferPre = function (editor) {
 						{
 						ctor: '_Tuple2',
 						_0: 'width',
-						_1: _user$project$Main$asPx(editor.width * 15)
+						_1: _henriiik$vlm$Main$asPx(editor.width * 15)
 					},
 						{
 						ctor: '_Tuple2',
 						_0: 'height',
-						_1: _user$project$Main$asPx(editor.height * 15)
+						_1: _henriiik$vlm$Main$asPx(editor.height * 15)
 					}
 					]))
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$html$Html$text(
-				A3(_elm_lang$core$Array$foldr, _user$project$Main$joinArray, '', editor.buffer))
+				A3(_elm_lang$core$Array$foldr, _henriiik$vlm$Main$joinArray, '', editor.buffer))
 			]));
 };
-var _user$project$Main$view = function (model) {
+var _henriiik$vlm$Main$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -8863,8 +8880,8 @@ var _user$project$Main$view = function (model) {
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_user$project$Main$renderCursor(model),
-				_user$project$Main$bufferPre(model.editor),
+				_henriiik$vlm$Main$renderCursor(model),
+				_henriiik$vlm$Main$bufferPre(model.editor),
 				A2(
 				_elm_lang$html$Html$pre,
 				_elm_lang$core$Native_List.fromArray(
@@ -8872,7 +8889,7 @@ var _user$project$Main$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html$text(
-						_user$project$Main$statusBarText(model))
+						_henriiik$vlm$Main$statusBarText(model))
 					])),
 				A2(
 				_elm_lang$html$Html$pre,
@@ -8884,16 +8901,16 @@ var _user$project$Main$view = function (model) {
 					]))
 			]));
 };
-var _user$project$Main$fromCode = function (code) {
+var _henriiik$vlm$Main$fromCode = function (code) {
 	return _elm_lang$core$String$fromChar(
 		_elm_lang$core$Char$fromCode(code));
 };
-var _user$project$Main$newMode = F2(
+var _henriiik$vlm$Main$newMode = F2(
 	function (code, mode) {
 		var _p1 = code;
 		return mode;
 	});
-var _user$project$Main$newLog = F2(
+var _henriiik$vlm$Main$newLog = F2(
 	function (code, log) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
@@ -8906,121 +8923,187 @@ var _user$project$Main$newLog = F2(
 					' - ',
 					A2(
 						_elm_lang$core$Basics_ops['++'],
-						_user$project$Main$fromCode(code),
+						_henriiik$vlm$Main$fromCode(code),
 						A2(_elm_lang$core$Basics_ops['++'], '\n', log)))));
 	});
-var _user$project$Main$wordIndexes = function (a) {
+var _henriiik$vlm$Main$lastIndex = function (list) {
+	return _elm_lang$core$List$head(
+		A2(
+			_elm_lang$core$List$map,
+			function (m) {
+				return m.index;
+			},
+			_elm_lang$core$List$reverse(list)));
+};
+var _henriiik$vlm$Main$prevIndex = F2(
+	function (i, list) {
+		return _elm_lang$core$List$head(
+			A2(
+				_elm_lang$core$List$map,
+				function (m) {
+					return m.index;
+				},
+				A2(
+					_elm_lang$core$List$filter,
+					function (m) {
+						return _elm_lang$core$Native_Utils.cmp(m.index, i) < 0;
+					},
+					_elm_lang$core$List$reverse(list))));
+	});
+var _henriiik$vlm$Main$nextIndex = F2(
+	function (i, list) {
+		return _elm_lang$core$List$head(
+			A2(
+				_elm_lang$core$List$map,
+				function (m) {
+					return m.index;
+				},
+				A2(
+					_elm_lang$core$List$filter,
+					function (m) {
+						return _elm_lang$core$Native_Utils.cmp(m.index, i) > 0;
+					},
+					list)));
+	});
+var _henriiik$vlm$Main$wordEndIndexes = function (a) {
+	return A3(
+		_elm_lang$core$Regex$find,
+		_elm_lang$core$Regex$All,
+		_elm_lang$core$Regex$regex('\\w\\b'),
+		a);
+};
+var _henriiik$vlm$Main$wordIndexes = function (a) {
 	return A3(
 		_elm_lang$core$Regex$find,
 		_elm_lang$core$Regex$All,
 		_elm_lang$core$Regex$regex('\\b\\w'),
 		a);
 };
-var _user$project$Main$prevWord = F2(
-	function (a, i) {
+var _henriiik$vlm$Main$lineAt = F2(
+	function (editor, i) {
 		return A2(
 			_elm_lang$core$Maybe$withDefault,
-			0,
-			_elm_lang$core$List$head(
-				A2(
-					_elm_lang$core$List$map,
-					function (m) {
-						return m.index;
-					},
-					A2(
-						_elm_lang$core$List$filter,
-						function (m) {
-							return _elm_lang$core$Native_Utils.cmp(m.index, i) < 0;
-						},
-						_elm_lang$core$List$reverse(
-							_user$project$Main$wordIndexes(a))))));
+			'',
+			A2(_elm_lang$core$Array$get, i, editor.buffer));
 	});
-var _user$project$Main$nextWord = F2(
-	function (a, i) {
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
+var _henriiik$vlm$Main$currentLine = function (editor) {
+	return A2(_henriiik$vlm$Main$lineAt, editor, editor.cursor.row);
+};
+var _henriiik$vlm$Main$prevLine = function (editor) {
+	return A2(_henriiik$vlm$Main$lineAt, editor, editor.cursor.row - 1);
+};
+var _henriiik$vlm$Main$nextLine = function (editor) {
+	return A2(_henriiik$vlm$Main$lineAt, editor, editor.cursor.row + 1);
+};
+var _henriiik$vlm$Main$start = function (e) {
+	return _elm_lang$core$Native_Utils.update(
+		e,
+		{
+			cursor: A2(_henriiik$vlm$Cursor$withCol, 0, e.cursor)
+		});
+};
+var _henriiik$vlm$Main$up = function (editor) {
+	var row = A2(_elm_lang$core$Basics$max, editor.cursor.row - 1, 0);
+	return _elm_lang$core$Native_Utils.update(
+		editor,
+		{
+			cursor: A2(_henriiik$vlm$Cursor$withRow, row, editor.cursor)
+		});
+};
+var _henriiik$vlm$Main$motionWordBack = function (e) {
+	var _p2 = A2(
+		_henriiik$vlm$Main$prevIndex,
+		e.cursor.col,
+		_henriiik$vlm$Main$wordIndexes(
+			_henriiik$vlm$Main$currentLine(e)));
+	if (_p2.ctor === 'Just') {
+		return _elm_lang$core$Native_Utils.update(
+			e,
+			{
+				cursor: A2(_henriiik$vlm$Cursor$withCol, _p2._0, e.cursor)
+			});
+	} else {
+		var _p3 = _henriiik$vlm$Main$lastIndex(
+			_henriiik$vlm$Main$wordIndexes(
+				_henriiik$vlm$Main$prevLine(e)));
+		if (_p3.ctor === 'Just') {
+			return _henriiik$vlm$Main$up(
+				_elm_lang$core$Native_Utils.update(
+					e,
+					{
+						cursor: A2(_henriiik$vlm$Cursor$withCol, _p3._0, e.cursor)
+					}));
+		} else {
+			return _henriiik$vlm$Main$up(e);
+		}
+	}
+};
+var _henriiik$vlm$Main$down = function (editor) {
+	var row = A2(_elm_lang$core$Basics$min, editor.cursor.row + 1, editor.height - 1);
+	return _elm_lang$core$Native_Utils.update(
+		editor,
+		{
+			cursor: A2(_henriiik$vlm$Cursor$withRow, row, editor.cursor)
+		});
+};
+var _henriiik$vlm$Main$motionWord = function (e) {
+	var _p4 = A2(
+		_henriiik$vlm$Main$nextIndex,
+		e.cursor.col,
+		_henriiik$vlm$Main$wordIndexes(
+			_henriiik$vlm$Main$currentLine(e)));
+	if (_p4.ctor === 'Just') {
+		return _elm_lang$core$Native_Utils.update(
+			e,
+			{
+				cursor: A2(_henriiik$vlm$Cursor$withCol, _p4._0, e.cursor)
+			});
+	} else {
+		return _henriiik$vlm$Main$start(
+			_henriiik$vlm$Main$down(e));
+	}
+};
+var _henriiik$vlm$Main$motionWordEnd = function (e) {
+	var _p5 = A2(
+		_henriiik$vlm$Main$nextIndex,
+		e.cursor.col,
+		_henriiik$vlm$Main$wordEndIndexes(
+			_henriiik$vlm$Main$currentLine(e)));
+	if (_p5.ctor === 'Just') {
+		return _elm_lang$core$Native_Utils.update(
+			e,
+			{
+				cursor: A2(_henriiik$vlm$Cursor$withCol, _p5._0, e.cursor)
+			});
+	} else {
+		var _p6 = A2(
+			_henriiik$vlm$Main$nextIndex,
 			0,
-			_elm_lang$core$List$head(
-				A2(
-					_elm_lang$core$List$map,
-					function (m) {
-						return m.index;
-					},
-					A2(
-						_elm_lang$core$List$filter,
-						function (m) {
-							return _elm_lang$core$Native_Utils.cmp(m.index, i) > 0;
-						},
-						_user$project$Main$wordIndexes(a)))));
-	});
-var _user$project$Main$motionWordBack = function (editor) {
-	var cursor = editor.cursor;
-	var row = editor.cursor.row;
-	var line = A2(
-		_elm_lang$core$Maybe$withDefault,
-		'',
-		A2(_elm_lang$core$Array$get, row, editor.buffer));
-	var col = A2(_user$project$Main$prevWord, line, editor.cursor.col);
+			_henriiik$vlm$Main$wordEndIndexes(
+				_henriiik$vlm$Main$nextLine(e)));
+		if (_p6.ctor === 'Just') {
+			return _henriiik$vlm$Main$down(
+				_elm_lang$core$Native_Utils.update(
+					e,
+					{
+						cursor: A2(_henriiik$vlm$Cursor$withCol, _p6._0, e.cursor)
+					}));
+		} else {
+			return _henriiik$vlm$Main$down(e);
+		}
+	}
+};
+var _henriiik$vlm$Main$right = function (editor) {
+	var col = A2(_elm_lang$core$Basics$min, editor.cursor.col + 1, editor.width);
 	return _elm_lang$core$Native_Utils.update(
 		editor,
 		{
-			cursor: _elm_lang$core$Native_Utils.update(
-				cursor,
-				{col: col})
+			cursor: A2(_henriiik$vlm$Cursor$withCol, col, editor.cursor)
 		});
 };
-var _user$project$Main$motionWord = function (editor) {
-	var cursor = editor.cursor;
-	var row = editor.cursor.row;
-	var line = A2(
-		_elm_lang$core$Maybe$withDefault,
-		'',
-		A2(_elm_lang$core$Array$get, row, editor.buffer));
-	var col = A2(_user$project$Main$nextWord, line, editor.cursor.col);
-	return _elm_lang$core$Native_Utils.update(
-		editor,
-		{
-			cursor: _elm_lang$core$Native_Utils.update(
-				cursor,
-				{col: col})
-		});
-};
-var _user$project$Main$up = function (editor) {
-	var cursor = editor.cursor;
-	var row = A2(_elm_lang$core$Basics$max, cursor.row - 1, 0);
-	return _elm_lang$core$Native_Utils.update(
-		editor,
-		{
-			cursor: _elm_lang$core$Native_Utils.update(
-				cursor,
-				{row: row})
-		});
-};
-var _user$project$Main$down = function (editor) {
-	var cursor = editor.cursor;
-	var row = A2(_elm_lang$core$Basics$min, cursor.row + 1, editor.height - 1);
-	return _elm_lang$core$Native_Utils.update(
-		editor,
-		{
-			cursor: _elm_lang$core$Native_Utils.update(
-				cursor,
-				{row: row})
-		});
-};
-var _user$project$Main$right = function (editor) {
-	var cursor = editor.cursor;
-	var col = A2(_elm_lang$core$Basics$min, cursor.col + 1, editor.width);
-	return _elm_lang$core$Native_Utils.update(
-		editor,
-		{
-			cursor: _elm_lang$core$Native_Utils.update(
-				cursor,
-				{col: col})
-		});
-};
-var _user$project$Main$insertChar = F2(
+var _henriiik$vlm$Main$insertChar = F2(
 	function (code, editor) {
-		var editor = _user$project$Main$right(editor);
+		var editor = _henriiik$vlm$Main$right(editor);
 		var col = editor.cursor.col - 1;
 		var row = editor.cursor.row;
 		var oldLine = A2(
@@ -9032,7 +9115,7 @@ var _user$project$Main$insertChar = F2(
 			A2(_elm_lang$core$String$left, col, oldLine),
 			A2(
 				_elm_lang$core$Basics_ops['++'],
-				_user$project$Main$fromCode(code),
+				_henriiik$vlm$Main$fromCode(code),
 				A2(
 					_elm_lang$core$String$right,
 					_elm_lang$core$String$length(oldLine) - col,
@@ -9043,19 +9126,16 @@ var _user$project$Main$insertChar = F2(
 				buffer: A3(_elm_lang$core$Array$set, row, newLine, editor.buffer)
 			});
 	});
-var _user$project$Main$left = function (editor) {
-	var cursor = editor.cursor;
-	var col = A2(_elm_lang$core$Basics$max, cursor.col - 1, 0);
+var _henriiik$vlm$Main$left = function (editor) {
+	var col = A2(_elm_lang$core$Basics$max, editor.cursor.col - 1, 0);
 	return _elm_lang$core$Native_Utils.update(
 		editor,
 		{
-			cursor: _elm_lang$core$Native_Utils.update(
-				cursor,
-				{col: col})
+			cursor: A2(_henriiik$vlm$Cursor$withCol, col, editor.cursor)
 		});
 };
-var _user$project$Main$deleteChar = function (editor) {
-	var editor = _user$project$Main$left(editor);
+var _henriiik$vlm$Main$deleteChar = function (editor) {
+	var editor = _henriiik$vlm$Main$left(editor);
 	var col = editor.cursor.col + 1;
 	var row = editor.cursor.row;
 	var oldLine = A2(
@@ -9074,43 +9154,39 @@ var _user$project$Main$deleteChar = function (editor) {
 		editor,
 		{buffer: buffer});
 };
-var _user$project$Main$Cursor = F2(
-	function (a, b) {
-		return {row: a, col: b};
-	});
-var _user$project$Main$Editor = F4(
+var _henriiik$vlm$Main$Editor = F4(
 	function (a, b, c, d) {
 		return {cursor: a, buffer: b, width: c, height: d};
 	});
-var _user$project$Main$Model = F6(
+var _henriiik$vlm$Main$Model = F6(
 	function (a, b, c, d, e, f) {
 		return {editor: a, log: b, mode: c, ctrl: d, shift: e, alt: f};
 	});
-var _user$project$Main$Insert = {ctor: 'Insert'};
-var _user$project$Main$Normal = {ctor: 'Normal'};
-var _user$project$Main$init = {
+var _henriiik$vlm$Main$Insert = {ctor: 'Insert'};
+var _henriiik$vlm$Main$Normal = {ctor: 'Normal'};
+var _henriiik$vlm$Main$init = {
 	ctor: '_Tuple2',
 	_0: A6(
-		_user$project$Main$Model,
+		_henriiik$vlm$Main$Model,
 		A4(
-			_user$project$Main$Editor,
-			A2(_user$project$Main$Cursor, 0, 0),
+			_henriiik$vlm$Main$Editor,
+			A2(_henriiik$vlm$Cursor$Cursor, 0, 0),
 			_elm_lang$core$Array$fromList(
 				_elm_lang$core$Native_List.fromArray(
 					['this is the buffer', 'this is the second line', 'this is the third line'])),
 			40,
 			10),
 		'this is the log',
-		_user$project$Main$Normal,
+		_henriiik$vlm$Main$Normal,
 		false,
 		false,
 		false),
 	_1: _elm_lang$core$Platform_Cmd$none
 };
-var _user$project$Main$newModifiers = F3(
+var _henriiik$vlm$Main$newModifiers = F3(
 	function (isDown, code, model) {
-		var _p2 = code;
-		switch (_p2) {
+		var _p7 = code;
+		switch (_p7) {
 			case 16:
 				return _elm_lang$core$Native_Utils.update(
 					model,
@@ -9125,76 +9201,82 @@ var _user$project$Main$newModifiers = F3(
 					{alt: isDown});
 			default:
 				if (isDown) {
-					var _p3 = model.mode;
-					if (_p3.ctor === 'Insert') {
-						var _p4 = code;
-						switch (_p4) {
+					var _p8 = model.mode;
+					if (_p8.ctor === 'Insert') {
+						var _p9 = code;
+						switch (_p9) {
 							case 27:
 								return _elm_lang$core$Native_Utils.update(
 									model,
-									{mode: _user$project$Main$Normal});
+									{mode: _henriiik$vlm$Main$Normal});
 							case 8:
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										editor: _user$project$Main$deleteChar(model.editor)
+										editor: _henriiik$vlm$Main$deleteChar(model.editor)
 									});
 							default:
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										editor: A2(_user$project$Main$insertChar, code, model.editor)
+										editor: A2(_henriiik$vlm$Main$insertChar, code, model.editor)
 									});
 						}
 					} else {
-						var _p5 = code;
-						switch (_p5) {
+						var _p10 = code;
+						switch (_p10) {
 							case 65:
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										mode: _user$project$Main$Insert,
-										editor: _user$project$Main$right(model.editor)
-									});
-							case 73:
-								return _elm_lang$core$Native_Utils.update(
-									model,
-									{mode: _user$project$Main$Insert});
-							case 72:
-								return _elm_lang$core$Native_Utils.update(
-									model,
-									{
-										editor: _user$project$Main$left(model.editor)
-									});
-							case 74:
-								return _elm_lang$core$Native_Utils.update(
-									model,
-									{
-										editor: _user$project$Main$down(model.editor)
-									});
-							case 75:
-								return _elm_lang$core$Native_Utils.update(
-									model,
-									{
-										editor: _user$project$Main$up(model.editor)
-									});
-							case 76:
-								return _elm_lang$core$Native_Utils.update(
-									model,
-									{
-										editor: _user$project$Main$right(model.editor)
-									});
-							case 87:
-								return _elm_lang$core$Native_Utils.update(
-									model,
-									{
-										editor: _user$project$Main$motionWord(model.editor)
+										mode: _henriiik$vlm$Main$Insert,
+										editor: _henriiik$vlm$Main$right(model.editor)
 									});
 							case 66:
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										editor: _user$project$Main$motionWordBack(model.editor)
+										editor: _henriiik$vlm$Main$motionWordBack(model.editor)
+									});
+							case 69:
+								return _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										editor: _henriiik$vlm$Main$motionWordEnd(model.editor)
+									});
+							case 73:
+								return _elm_lang$core$Native_Utils.update(
+									model,
+									{mode: _henriiik$vlm$Main$Insert});
+							case 72:
+								return _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										editor: _henriiik$vlm$Main$left(model.editor)
+									});
+							case 74:
+								return _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										editor: _henriiik$vlm$Main$down(model.editor)
+									});
+							case 75:
+								return _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										editor: _henriiik$vlm$Main$up(model.editor)
+									});
+							case 76:
+								return _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										editor: _henriiik$vlm$Main$right(model.editor)
+									});
+							case 87:
+								return _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										editor: _henriiik$vlm$Main$motionWord(model.editor)
 									});
 							default:
 								return model;
@@ -9205,13 +9287,13 @@ var _user$project$Main$newModifiers = F3(
 				}
 		}
 	});
-var _user$project$Main$update = F2(
+var _henriiik$vlm$Main$update = F2(
 	function (msg, model) {
-		var _p6 = msg;
-		if (_p6.ctor === 'KeyDown') {
-			var _p7 = _p6._0;
-			var model = A3(_user$project$Main$newModifiers, true, _p7, model);
-			var log = A2(_user$project$Main$newLog, _p7, model.log);
+		var _p11 = msg;
+		if (_p11.ctor === 'KeyDown') {
+			var _p12 = _p11._0;
+			var model = A3(_henriiik$vlm$Main$newModifiers, true, _p12, model);
+			var log = A2(_henriiik$vlm$Main$newLog, _p12, model.log);
 			return {
 				ctor: '_Tuple2',
 				_0: _elm_lang$core$Native_Utils.update(
@@ -9220,9 +9302,9 @@ var _user$project$Main$update = F2(
 				_1: _elm_lang$core$Platform_Cmd$none
 			};
 		} else {
-			var _p8 = _p6._0;
-			var model = A3(_user$project$Main$newModifiers, false, _p8, model);
-			var mode = A2(_user$project$Main$newMode, _p8, model.mode);
+			var _p13 = _p11._0;
+			var model = A3(_henriiik$vlm$Main$newModifiers, false, _p13, model);
+			var mode = A2(_henriiik$vlm$Main$newMode, _p13, model.mode);
 			return {
 				ctor: '_Tuple2',
 				_0: _elm_lang$core$Native_Utils.update(
@@ -9232,28 +9314,28 @@ var _user$project$Main$update = F2(
 			};
 		}
 	});
-var _user$project$Main$KeyUp = function (a) {
+var _henriiik$vlm$Main$KeyUp = function (a) {
 	return {ctor: 'KeyUp', _0: a};
 };
-var _user$project$Main$KeyDown = function (a) {
+var _henriiik$vlm$Main$KeyDown = function (a) {
 	return {ctor: 'KeyDown', _0: a};
 };
-var _user$project$Main$subscriptions = function (model) {
+var _henriiik$vlm$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$batch(
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$keyboard$Keyboard$ups(_user$project$Main$KeyUp),
-				_elm_lang$keyboard$Keyboard$downs(_user$project$Main$KeyDown)
+				_elm_lang$keyboard$Keyboard$ups(_henriiik$vlm$Main$KeyUp),
+				_elm_lang$keyboard$Keyboard$downs(_henriiik$vlm$Main$KeyDown)
 			]));
 };
-var _user$project$Main$main = {
+var _henriiik$vlm$Main$main = {
 	main: _elm_lang$html$Html_App$program(
-		{init: _user$project$Main$init, view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})
+		{init: _henriiik$vlm$Main$init, view: _henriiik$vlm$Main$view, update: _henriiik$vlm$Main$update, subscriptions: _henriiik$vlm$Main$subscriptions})
 };
 
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
-_elm_lang$core$Native_Platform.addPublicModule(Elm['Main'], 'Main', typeof _user$project$Main$main === 'undefined' ? null : _user$project$Main$main);
+_elm_lang$core$Native_Platform.addPublicModule(Elm['Main'], 'Main', typeof _henriiik$vlm$Main$main === 'undefined' ? null : _henriiik$vlm$Main$main);
 
 if (typeof define === "function" && define['amd'])
 {
