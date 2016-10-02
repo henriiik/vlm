@@ -7,6 +7,8 @@ import Html.Attributes exposing (style)
 import Keyboard
 import String
 import Array
+import Regex
+import Debug
 
 
 main : Program Never
@@ -102,6 +104,69 @@ up editor =
             editor.cursor
     in
         { editor | cursor = { cursor | row = row } }
+
+
+motionWord : Editor -> Editor
+motionWord editor =
+    let
+        row =
+            editor.cursor.row
+
+        line =
+            (Maybe.withDefault "" (Array.get row editor.buffer))
+
+        col =
+            (nextWord line editor.cursor.col)
+
+        cursor =
+            editor.cursor
+    in
+        { editor | cursor = { cursor | col = col } }
+
+motionWordBack : Editor -> Editor
+motionWordBack editor =
+    let
+        row =
+            editor.cursor.row
+
+        line =
+            (Maybe.withDefault "" (Array.get row editor.buffer))
+
+        col =
+            (prevWord line editor.cursor.col)
+
+        cursor =
+            editor.cursor
+    in
+        { editor | cursor = { cursor | col = col } }
+
+
+nextWord : String -> Int -> Int
+nextWord line i =
+    let
+        matches =
+            List.filter (\m -> m.index > i) (Regex.find Regex.All (Regex.regex "\\b\\w") line)
+    in
+        case List.head matches of
+            Just m ->
+                Debug.log "index" m.index
+
+            _ ->
+                0
+
+
+prevWord : String -> Int -> Int
+prevWord line i =
+    let
+        matches =
+            List.filter (\m -> m.index < Debug.log "i" i) (Regex.find Regex.All (Regex.regex "\\b\\w") line)
+    in
+        case List.head (List.reverse matches) of
+            Just m ->
+                Debug.log "index" m.index
+
+            _ ->
+                0
 
 
 deleteChar : Editor -> Editor
@@ -256,6 +321,14 @@ newModifiers isDown code model =
                             -- l
                             76 ->
                                 { model | editor = (right model.editor) }
+
+                            -- w
+                            87 ->
+                                { model | editor = (motionWord model.editor) }
+
+                            -- b
+                            66 ->
+                                { model | editor = (motionWordBack model.editor) }
 
                             _ ->
                                 model
