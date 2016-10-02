@@ -104,6 +104,16 @@ lineAt editor i =
     Maybe.withDefault "" (Array.get i editor.buffer)
 
 
+replaceLineAt : Int -> String -> Editor -> Editor
+replaceLineAt i l e =
+    { e | buffer = (Array.set i l e.buffer) }
+
+
+replaceCurrentLine : String -> Editor -> Editor
+replaceCurrentLine l e =
+    replaceLineAt e.cursor.row l e
+
+
 currentLine : Editor -> String
 currentLine editor =
     lineAt editor editor.cursor.row
@@ -194,49 +204,41 @@ motionWordEnd e =
                     cursorDown e
 
 
-deleteChar : Editor -> Editor
-deleteChar editor =
+splitAt : Int -> String -> ( String, String )
+splitAt i a =
+    ( String.left i a, String.right ((String.length a) - i) a )
+
+
+deleteAt : Int -> String -> String
+deleteAt i a =
     let
-        row =
-            editor.cursor.row
-
-        col =
-            editor.cursor.col + 1
-
-        oldLine =
-            Maybe.withDefault "" (Array.get row editor.buffer)
-
-        newLine =
-            (String.left (col - 1) oldLine) ++ (String.right ((String.length oldLine) - col) oldLine)
-
-        buffer =
-            (Array.set row newLine editor.buffer)
-
-        editor =
-            (cursorLeft editor)
+        split =
+            splitAt i a
     in
-        { editor | buffer = buffer }
+        (String.dropRight 1 (fst split)) ++ snd split
+
+
+deleteChar : Editor -> Editor
+deleteChar e =
+    e
+        |> replaceCurrentLine (deleteAt e.cursor.col (currentLine e))
+        |> cursorLeft
+
+
+insertAt : Int -> String -> String -> String
+insertAt i a b =
+    let
+        split =
+            splitAt i b
+    in
+        fst split ++ a ++ snd split
 
 
 insertChar : Keyboard.KeyCode -> Editor -> Editor
-insertChar code editor =
-    let
-        row =
-            editor.cursor.row
-
-        col =
-            editor.cursor.col - 1
-
-        oldLine =
-            Maybe.withDefault "" (Array.get row editor.buffer)
-
-        newLine =
-            (String.left (col) oldLine) ++ (fromCode code) ++ (String.right ((String.length oldLine) - col) oldLine)
-
-        editor =
-            (cursorRight editor)
-    in
-        { editor | buffer = (Array.set row newLine editor.buffer) }
+insertChar c e =
+    e
+        |> replaceCurrentLine (insertAt e.cursor.col (fromCode c) (currentLine e))
+        |> cursorRight
 
 
 init : ( Model, Cmd Msg )
@@ -364,6 +366,15 @@ newModifiers isDown code model =
                             -- w
                             87 ->
                                 { model | editor = motionWord model.editor }
+
+                            -- x
+                            88 ->
+                                { model
+                                    | editor =
+                                        model.editor
+                                            |> cursorRight
+                                            |> deleteChar
+                                }
 
                             _ ->
                                 model

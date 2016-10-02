@@ -8926,6 +8926,39 @@ var _henriiik$vlm$Main$newLog = F2(
 						_henriiik$vlm$Main$fromCode(code),
 						A2(_elm_lang$core$Basics_ops['++'], '\n', log)))));
 	});
+var _henriiik$vlm$Main$splitAt = F2(
+	function (i, a) {
+		return {
+			ctor: '_Tuple2',
+			_0: A2(_elm_lang$core$String$left, i, a),
+			_1: A2(
+				_elm_lang$core$String$right,
+				_elm_lang$core$String$length(a) - i,
+				a)
+		};
+	});
+var _henriiik$vlm$Main$deleteAt = F2(
+	function (i, a) {
+		var split = A2(_henriiik$vlm$Main$splitAt, i, a);
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			A2(
+				_elm_lang$core$String$dropRight,
+				1,
+				_elm_lang$core$Basics$fst(split)),
+			_elm_lang$core$Basics$snd(split));
+	});
+var _henriiik$vlm$Main$insertAt = F3(
+	function (i, a, b) {
+		var split = A2(_henriiik$vlm$Main$splitAt, i, b);
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Basics$fst(split),
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				a,
+				_elm_lang$core$Basics$snd(split)));
+	});
 var _henriiik$vlm$Main$lastIndex = function (list) {
 	return _elm_lang$core$List$head(
 		A2(
@@ -8979,6 +9012,18 @@ var _henriiik$vlm$Main$wordIndexes = function (a) {
 		_elm_lang$core$Regex$regex('\\b\\w'),
 		a);
 };
+var _henriiik$vlm$Main$replaceLineAt = F3(
+	function (i, l, e) {
+		return _elm_lang$core$Native_Utils.update(
+			e,
+			{
+				buffer: A3(_elm_lang$core$Array$set, i, l, e.buffer)
+			});
+	});
+var _henriiik$vlm$Main$replaceCurrentLine = F2(
+	function (l, e) {
+		return A3(_henriiik$vlm$Main$replaceLineAt, e.cursor.row, l, e);
+	});
 var _henriiik$vlm$Main$lineAt = F2(
 	function (editor, i) {
 		return A2(
@@ -9117,29 +9162,16 @@ var _henriiik$vlm$Main$cursorRight = function (editor) {
 		});
 };
 var _henriiik$vlm$Main$insertChar = F2(
-	function (code, editor) {
-		var editor = _henriiik$vlm$Main$cursorRight(editor);
-		var col = editor.cursor.col - 1;
-		var row = editor.cursor.row;
-		var oldLine = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, row, editor.buffer));
-		var newLine = A2(
-			_elm_lang$core$Basics_ops['++'],
-			A2(_elm_lang$core$String$left, col, oldLine),
+	function (c, e) {
+		return _henriiik$vlm$Main$cursorRight(
 			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_henriiik$vlm$Main$fromCode(code),
-				A2(
-					_elm_lang$core$String$right,
-					_elm_lang$core$String$length(oldLine) - col,
-					oldLine)));
-		return _elm_lang$core$Native_Utils.update(
-			editor,
-			{
-				buffer: A3(_elm_lang$core$Array$set, row, newLine, editor.buffer)
-			});
+				_henriiik$vlm$Main$replaceCurrentLine,
+				A3(
+					_henriiik$vlm$Main$insertAt,
+					e.cursor.col,
+					_henriiik$vlm$Main$fromCode(c),
+					_henriiik$vlm$Main$currentLine(e)),
+				e));
 	});
 var _henriiik$vlm$Main$cursorLeft = function (editor) {
 	var col = A2(_elm_lang$core$Basics$max, editor.cursor.col - 1, 0);
@@ -9149,25 +9181,15 @@ var _henriiik$vlm$Main$cursorLeft = function (editor) {
 			cursor: A2(_henriiik$vlm$Cursor$withCol, col, editor.cursor)
 		});
 };
-var _henriiik$vlm$Main$deleteChar = function (editor) {
-	var editor = _henriiik$vlm$Main$cursorLeft(editor);
-	var col = editor.cursor.col + 1;
-	var row = editor.cursor.row;
-	var oldLine = A2(
-		_elm_lang$core$Maybe$withDefault,
-		'',
-		A2(_elm_lang$core$Array$get, row, editor.buffer));
-	var newLine = A2(
-		_elm_lang$core$Basics_ops['++'],
-		A2(_elm_lang$core$String$left, col - 1, oldLine),
+var _henriiik$vlm$Main$deleteChar = function (e) {
+	return _henriiik$vlm$Main$cursorLeft(
 		A2(
-			_elm_lang$core$String$right,
-			_elm_lang$core$String$length(oldLine) - col,
-			oldLine));
-	var buffer = A3(_elm_lang$core$Array$set, row, newLine, editor.buffer);
-	return _elm_lang$core$Native_Utils.update(
-		editor,
-		{buffer: buffer});
+			_henriiik$vlm$Main$replaceCurrentLine,
+			A2(
+				_henriiik$vlm$Main$deleteAt,
+				e.cursor.col,
+				_henriiik$vlm$Main$currentLine(e)),
+			e));
 };
 var _henriiik$vlm$Main$Editor = F4(
 	function (a, b, c, d) {
@@ -9303,6 +9325,12 @@ var _henriiik$vlm$Main$newModifiers = F3(
 									{
 										editor: _henriiik$vlm$Main$motionWord(model.editor)
 									});
+							case 88:
+								var editor = _henriiik$vlm$Main$deleteChar(
+									_henriiik$vlm$Main$cursorRight(model.editor));
+								return _elm_lang$core$Native_Utils.update(
+									model,
+									{editor: editor});
 							default:
 								return model;
 						}
