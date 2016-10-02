@@ -8995,14 +8995,25 @@ var _henriiik$vlm$Main$prevLine = function (editor) {
 var _henriiik$vlm$Main$nextLine = function (editor) {
 	return A2(_henriiik$vlm$Main$lineAt, editor, editor.cursor.row + 1);
 };
-var _henriiik$vlm$Main$start = function (e) {
+var _henriiik$vlm$Main$cursorEnd = function (e) {
+	return _elm_lang$core$Native_Utils.update(
+		e,
+		{
+			cursor: A2(
+				_henriiik$vlm$Cursor$withCol,
+				_elm_lang$core$String$length(
+					_henriiik$vlm$Main$currentLine(e)),
+				e.cursor)
+		});
+};
+var _henriiik$vlm$Main$cursorStart = function (e) {
 	return _elm_lang$core$Native_Utils.update(
 		e,
 		{
 			cursor: A2(_henriiik$vlm$Cursor$withCol, 0, e.cursor)
 		});
 };
-var _henriiik$vlm$Main$up = function (editor) {
+var _henriiik$vlm$Main$cursorUp = function (editor) {
 	var row = A2(_elm_lang$core$Basics$max, editor.cursor.row - 1, 0);
 	return _elm_lang$core$Native_Utils.update(
 		editor,
@@ -9027,18 +9038,18 @@ var _henriiik$vlm$Main$motionWordBack = function (e) {
 			_henriiik$vlm$Main$wordIndexes(
 				_henriiik$vlm$Main$prevLine(e)));
 		if (_p3.ctor === 'Just') {
-			return _henriiik$vlm$Main$up(
+			return _henriiik$vlm$Main$cursorUp(
 				_elm_lang$core$Native_Utils.update(
 					e,
 					{
 						cursor: A2(_henriiik$vlm$Cursor$withCol, _p3._0, e.cursor)
 					}));
 		} else {
-			return _henriiik$vlm$Main$up(e);
+			return _henriiik$vlm$Main$cursorUp(e);
 		}
 	}
 };
-var _henriiik$vlm$Main$down = function (editor) {
+var _henriiik$vlm$Main$cursorDown = function (editor) {
 	var row = A2(_elm_lang$core$Basics$min, editor.cursor.row + 1, editor.height - 1);
 	return _elm_lang$core$Native_Utils.update(
 		editor,
@@ -9059,8 +9070,8 @@ var _henriiik$vlm$Main$motionWord = function (e) {
 				cursor: A2(_henriiik$vlm$Cursor$withCol, _p4._0, e.cursor)
 			});
 	} else {
-		return _henriiik$vlm$Main$start(
-			_henriiik$vlm$Main$down(e));
+		return _henriiik$vlm$Main$cursorStart(
+			_henriiik$vlm$Main$cursorDown(e));
 	}
 };
 var _henriiik$vlm$Main$motionWordEnd = function (e) {
@@ -9082,19 +9093,23 @@ var _henriiik$vlm$Main$motionWordEnd = function (e) {
 			_henriiik$vlm$Main$wordEndIndexes(
 				_henriiik$vlm$Main$nextLine(e)));
 		if (_p6.ctor === 'Just') {
-			return _henriiik$vlm$Main$down(
+			return _henriiik$vlm$Main$cursorDown(
 				_elm_lang$core$Native_Utils.update(
 					e,
 					{
 						cursor: A2(_henriiik$vlm$Cursor$withCol, _p6._0, e.cursor)
 					}));
 		} else {
-			return _henriiik$vlm$Main$down(e);
+			return _henriiik$vlm$Main$cursorDown(e);
 		}
 	}
 };
-var _henriiik$vlm$Main$right = function (editor) {
-	var col = A2(_elm_lang$core$Basics$min, editor.cursor.col + 1, editor.width);
+var _henriiik$vlm$Main$cursorRight = function (editor) {
+	var col = A2(
+		_elm_lang$core$Basics$min,
+		editor.cursor.col + 1,
+		_elm_lang$core$String$length(
+			_henriiik$vlm$Main$currentLine(editor)));
 	return _elm_lang$core$Native_Utils.update(
 		editor,
 		{
@@ -9103,7 +9118,7 @@ var _henriiik$vlm$Main$right = function (editor) {
 };
 var _henriiik$vlm$Main$insertChar = F2(
 	function (code, editor) {
-		var editor = _henriiik$vlm$Main$right(editor);
+		var editor = _henriiik$vlm$Main$cursorRight(editor);
 		var col = editor.cursor.col - 1;
 		var row = editor.cursor.row;
 		var oldLine = A2(
@@ -9126,7 +9141,7 @@ var _henriiik$vlm$Main$insertChar = F2(
 				buffer: A3(_elm_lang$core$Array$set, row, newLine, editor.buffer)
 			});
 	});
-var _henriiik$vlm$Main$left = function (editor) {
+var _henriiik$vlm$Main$cursorLeft = function (editor) {
 	var col = A2(_elm_lang$core$Basics$max, editor.cursor.col - 1, 0);
 	return _elm_lang$core$Native_Utils.update(
 		editor,
@@ -9135,7 +9150,7 @@ var _henriiik$vlm$Main$left = function (editor) {
 		});
 };
 var _henriiik$vlm$Main$deleteChar = function (editor) {
-	var editor = _henriiik$vlm$Main$left(editor);
+	var editor = _henriiik$vlm$Main$cursorLeft(editor);
 	var col = editor.cursor.col + 1;
 	var row = editor.cursor.row;
 	var oldLine = A2(
@@ -9226,11 +9241,16 @@ var _henriiik$vlm$Main$newModifiers = F3(
 						var _p10 = code;
 						switch (_p10) {
 							case 65:
-								return _elm_lang$core$Native_Utils.update(
+								return model.shift ? _elm_lang$core$Native_Utils.update(
 									model,
 									{
 										mode: _henriiik$vlm$Main$Insert,
-										editor: _henriiik$vlm$Main$right(model.editor)
+										editor: _henriiik$vlm$Main$cursorEnd(model.editor)
+									}) : _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										mode: _henriiik$vlm$Main$Insert,
+										editor: _henriiik$vlm$Main$cursorRight(model.editor)
 									});
 							case 66:
 								return _elm_lang$core$Native_Utils.update(
@@ -9252,25 +9272,25 @@ var _henriiik$vlm$Main$newModifiers = F3(
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										editor: _henriiik$vlm$Main$left(model.editor)
+										editor: _henriiik$vlm$Main$cursorLeft(model.editor)
 									});
 							case 74:
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										editor: _henriiik$vlm$Main$down(model.editor)
+										editor: _henriiik$vlm$Main$cursorDown(model.editor)
 									});
 							case 75:
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										editor: _henriiik$vlm$Main$up(model.editor)
+										editor: _henriiik$vlm$Main$cursorUp(model.editor)
 									});
 							case 76:
 								return _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										editor: _henriiik$vlm$Main$right(model.editor)
+										editor: _henriiik$vlm$Main$cursorRight(model.editor)
 									});
 							case 87:
 								return _elm_lang$core$Native_Utils.update(

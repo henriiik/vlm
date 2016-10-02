@@ -53,8 +53,8 @@ type alias Model =
     }
 
 
-left : Editor -> Editor
-left editor =
+cursorLeft : Editor -> Editor
+cursorLeft editor =
     let
         col =
             (max (editor.cursor.col - 1) 0)
@@ -62,17 +62,17 @@ left editor =
         { editor | cursor = (withCol col editor.cursor) }
 
 
-right : Editor -> Editor
-right editor =
+cursorRight : Editor -> Editor
+cursorRight editor =
     let
         col =
-            (min (editor.cursor.col + 1) editor.width)
+            (min (editor.cursor.col + 1) (String.length (currentLine editor)))
     in
         { editor | cursor = (withCol col editor.cursor) }
 
 
-down : Editor -> Editor
-down editor =
+cursorDown : Editor -> Editor
+cursorDown editor =
     let
         row =
             (min (editor.cursor.row + 1) (editor.height - 1))
@@ -80,8 +80,8 @@ down editor =
         { editor | cursor = (withRow row editor.cursor) }
 
 
-up : Editor -> Editor
-up editor =
+cursorUp : Editor -> Editor
+cursorUp editor =
     let
         row =
             (max (editor.cursor.row - 1) 0)
@@ -89,9 +89,14 @@ up editor =
         { editor | cursor = (withRow row editor.cursor) }
 
 
-start : Editor -> Editor
-start e =
+cursorStart : Editor -> Editor
+cursorStart e =
     { e | cursor = (withCol 0 e.cursor) }
+
+
+cursorEnd : Editor -> Editor
+cursorEnd e =
+    { e | cursor = (withCol (String.length (currentLine e)) e.cursor) }
 
 
 lineAt : Editor -> Int -> String
@@ -152,41 +157,41 @@ lastIndex list =
 motionWord : Editor -> Editor
 motionWord e =
     case nextIndex e.cursor.col (wordIndexes (currentLine e)) of
-        Maybe.Just col ->
+        Just col ->
             { e | cursor = withCol col e.cursor }
 
-        Maybe.Nothing ->
-            start (down e)
+        Nothing ->
+            cursorStart (cursorDown e)
 
 
 motionWordBack : Editor -> Editor
 motionWordBack e =
     case prevIndex e.cursor.col (wordIndexes (currentLine e)) of
-        Maybe.Just col ->
+        Just col ->
             { e | cursor = withCol col e.cursor }
 
-        Maybe.Nothing ->
+        Nothing ->
             case lastIndex (wordIndexes (prevLine e)) of
-                Maybe.Just col ->
-                    up { e | cursor = withCol col e.cursor }
+                Just col ->
+                    cursorUp { e | cursor = withCol col e.cursor }
 
-                Maybe.Nothing ->
-                    up e
+                Nothing ->
+                    cursorUp e
 
 
 motionWordEnd : Editor -> Editor
 motionWordEnd e =
     case nextIndex e.cursor.col (wordEndIndexes (currentLine e)) of
-        Maybe.Just col ->
+        Just col ->
             { e | cursor = withCol col e.cursor }
 
-        Maybe.Nothing ->
+        Nothing ->
             case nextIndex 0 (wordEndIndexes (nextLine e)) of
-                Maybe.Just col ->
-                    down { e | cursor = withCol col e.cursor }
+                Just col ->
+                    cursorDown { e | cursor = withCol col e.cursor }
 
-                Maybe.Nothing ->
-                    down e
+                Nothing ->
+                    cursorDown e
 
 
 deleteChar : Editor -> Editor
@@ -208,7 +213,7 @@ deleteChar editor =
             (Array.set row newLine editor.buffer)
 
         editor =
-            (left editor)
+            (cursorLeft editor)
     in
         { editor | buffer = buffer }
 
@@ -229,7 +234,7 @@ insertChar code editor =
             (String.left (col) oldLine) ++ (fromCode code) ++ (String.right ((String.length oldLine) - col) oldLine)
 
         editor =
-            (right editor)
+            (cursorRight editor)
     in
         { editor | buffer = (Array.set row newLine editor.buffer) }
 
@@ -320,7 +325,10 @@ newModifiers isDown code model =
                         case code of
                             -- a
                             65 ->
-                                { model | mode = Insert, editor = right model.editor }
+                                if model.shift then
+                                    { model | mode = Insert, editor = cursorEnd model.editor }
+                                else
+                                    { model | mode = Insert, editor = cursorRight model.editor }
 
                             -- b
                             66 ->
@@ -336,19 +344,19 @@ newModifiers isDown code model =
 
                             -- h
                             72 ->
-                                { model | editor = left model.editor }
+                                { model | editor = cursorLeft model.editor }
 
                             -- j
                             74 ->
-                                { model | editor = down model.editor }
+                                { model | editor = cursorDown model.editor }
 
                             -- k
                             75 ->
-                                { model | editor = up model.editor }
+                                { model | editor = cursorUp model.editor }
 
                             -- l
                             76 ->
-                                { model | editor = right model.editor }
+                                { model | editor = cursorRight model.editor }
 
                             -- w
                             87 ->
