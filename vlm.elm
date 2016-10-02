@@ -123,6 +123,7 @@ motionWord editor =
     in
         { editor | cursor = { cursor | col = col } }
 
+
 motionWordBack : Editor -> Editor
 motionWordBack editor =
     let
@@ -142,31 +143,27 @@ motionWordBack editor =
 
 
 nextWord : String -> Int -> Int
-nextWord line i =
-    let
-        matches =
-            List.filter (\m -> m.index > i) (Regex.find Regex.All (Regex.regex "\\b\\w") line)
-    in
-        case List.head matches of
-            Just m ->
-                Debug.log "index" m.index
-
-            _ ->
-                0
+nextWord a i =
+    wordIndexes a
+        |> List.filter (\m -> m.index > i)
+        |> List.map (\m -> m.index)
+        |> List.head
+        |> Maybe.withDefault 0
 
 
 prevWord : String -> Int -> Int
-prevWord line i =
-    let
-        matches =
-            List.filter (\m -> m.index < Debug.log "i" i) (Regex.find Regex.All (Regex.regex "\\b\\w") line)
-    in
-        case List.head (List.reverse matches) of
-            Just m ->
-                Debug.log "index" m.index
+prevWord a i =
+    wordIndexes a
+        |> List.reverse
+        |> List.filter (\m -> m.index < i)
+        |> List.map (\m -> m.index)
+        |> List.head
+        |> Maybe.withDefault 0
 
-            _ ->
-                0
+
+wordIndexes : String -> List Regex.Match
+wordIndexes a =
+    Regex.find Regex.All (Regex.regex "\\b\\w") a
 
 
 deleteChar : Editor -> Editor

@@ -8909,46 +8909,49 @@ var _user$project$Main$newLog = F2(
 						_user$project$Main$fromCode(code),
 						A2(_elm_lang$core$Basics_ops['++'], '\n', log)))));
 	});
+var _user$project$Main$wordIndexes = function (a) {
+	return A3(
+		_elm_lang$core$Regex$find,
+		_elm_lang$core$Regex$All,
+		_elm_lang$core$Regex$regex('\\b\\w'),
+		a);
+};
 var _user$project$Main$prevWord = F2(
-	function (line, i) {
-		var matches = A2(
-			_elm_lang$core$List$filter,
-			function (m) {
-				return _elm_lang$core$Native_Utils.cmp(
-					m.index,
-					A2(_elm_lang$core$Debug$log, 'i', i)) < 0;
-			},
-			A3(
-				_elm_lang$core$Regex$find,
-				_elm_lang$core$Regex$All,
-				_elm_lang$core$Regex$regex('\\b\\w'),
-				line));
-		var _p2 = _elm_lang$core$List$head(
-			_elm_lang$core$List$reverse(matches));
-		if (_p2.ctor === 'Just') {
-			return A2(_elm_lang$core$Debug$log, 'index', _p2._0.index);
-		} else {
-			return 0;
-		}
+	function (a, i) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			0,
+			_elm_lang$core$List$head(
+				A2(
+					_elm_lang$core$List$map,
+					function (m) {
+						return m.index;
+					},
+					A2(
+						_elm_lang$core$List$filter,
+						function (m) {
+							return _elm_lang$core$Native_Utils.cmp(m.index, i) < 0;
+						},
+						_elm_lang$core$List$reverse(
+							_user$project$Main$wordIndexes(a))))));
 	});
 var _user$project$Main$nextWord = F2(
-	function (line, i) {
-		var matches = A2(
-			_elm_lang$core$List$filter,
-			function (m) {
-				return _elm_lang$core$Native_Utils.cmp(m.index, i) > 0;
-			},
-			A3(
-				_elm_lang$core$Regex$find,
-				_elm_lang$core$Regex$All,
-				_elm_lang$core$Regex$regex('\\b\\w'),
-				line));
-		var _p3 = _elm_lang$core$List$head(matches);
-		if (_p3.ctor === 'Just') {
-			return A2(_elm_lang$core$Debug$log, 'index', _p3._0.index);
-		} else {
-			return 0;
-		}
+	function (a, i) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			0,
+			_elm_lang$core$List$head(
+				A2(
+					_elm_lang$core$List$map,
+					function (m) {
+						return m.index;
+					},
+					A2(
+						_elm_lang$core$List$filter,
+						function (m) {
+							return _elm_lang$core$Native_Utils.cmp(m.index, i) > 0;
+						},
+						_user$project$Main$wordIndexes(a)))));
 	});
 var _user$project$Main$motionWordBack = function (editor) {
 	var cursor = editor.cursor;
@@ -9106,8 +9109,8 @@ var _user$project$Main$init = {
 };
 var _user$project$Main$newModifiers = F3(
 	function (isDown, code, model) {
-		var _p4 = code;
-		switch (_p4) {
+		var _p2 = code;
+		switch (_p2) {
 			case 16:
 				return _elm_lang$core$Native_Utils.update(
 					model,
@@ -9122,10 +9125,10 @@ var _user$project$Main$newModifiers = F3(
 					{alt: isDown});
 			default:
 				if (isDown) {
-					var _p5 = model.mode;
-					if (_p5.ctor === 'Insert') {
-						var _p6 = code;
-						switch (_p6) {
+					var _p3 = model.mode;
+					if (_p3.ctor === 'Insert') {
+						var _p4 = code;
+						switch (_p4) {
 							case 27:
 								return _elm_lang$core$Native_Utils.update(
 									model,
@@ -9144,8 +9147,8 @@ var _user$project$Main$newModifiers = F3(
 									});
 						}
 					} else {
-						var _p7 = code;
-						switch (_p7) {
+						var _p5 = code;
+						switch (_p5) {
 							case 65:
 								return _elm_lang$core$Native_Utils.update(
 									model,
@@ -9204,11 +9207,11 @@ var _user$project$Main$newModifiers = F3(
 	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p8 = msg;
-		if (_p8.ctor === 'KeyDown') {
-			var _p9 = _p8._0;
-			var model = A3(_user$project$Main$newModifiers, true, _p9, model);
-			var log = A2(_user$project$Main$newLog, _p9, model.log);
+		var _p6 = msg;
+		if (_p6.ctor === 'KeyDown') {
+			var _p7 = _p6._0;
+			var model = A3(_user$project$Main$newModifiers, true, _p7, model);
+			var log = A2(_user$project$Main$newLog, _p7, model.log);
 			return {
 				ctor: '_Tuple2',
 				_0: _elm_lang$core$Native_Utils.update(
@@ -9217,9 +9220,9 @@ var _user$project$Main$update = F2(
 				_1: _elm_lang$core$Platform_Cmd$none
 			};
 		} else {
-			var _p10 = _p8._0;
-			var model = A3(_user$project$Main$newModifiers, false, _p10, model);
-			var mode = A2(_user$project$Main$newMode, _p10, model.mode);
+			var _p8 = _p6._0;
+			var model = A3(_user$project$Main$newModifiers, false, _p8, model);
+			var mode = A2(_user$project$Main$newMode, _p8, model.mode);
 			return {
 				ctor: '_Tuple2',
 				_0: _elm_lang$core$Native_Utils.update(
