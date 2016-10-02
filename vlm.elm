@@ -274,7 +274,7 @@ update msg model =
         KeyDown code ->
             let
                 model =
-                    newModifiers True code model
+                    onKeyDown code model
 
                 log =
                     newLog code model.log
@@ -282,116 +282,115 @@ update msg model =
                 ( { model | log = log }, Cmd.none )
 
         KeyUp code ->
-            let
-                mode =
-                    newMode code model.mode
-
-                model =
-                    newModifiers False code model
-            in
-                ( { model | mode = mode }, Cmd.none )
+            ( onKeyUp code model, Cmd.none )
 
 
-newModifiers : Bool -> KeyCode -> Model -> Model
-newModifiers isDown c m =
+onKeyUp : KeyCode -> Model -> Model
+onKeyUp c m =
     case c of
         16 ->
-            { m | shift = isDown }
+            { m | shift = False }
 
         17 ->
-            { m | ctrl = isDown }
+            { m | ctrl = False }
 
         18 ->
-            { m | alt = isDown }
+            { m | alt = False }
 
         _ ->
-            if isDown then
-                case m.mode of
-                    Insert ->
-                        case c of
-                            -- esc
-                            27 ->
-                                { m | mode = Normal }
+            m
 
-                            -- backspace
-                            8 ->
-                                { m | editor = deleteChar m.editor }
 
-                            -- enter
-                            -- 13 ->
-                            -- { m | buffer = (m.editor.buffer ++ "\n") }
-                            _ ->
-                                { m | editor = insertChar c m.editor }
+onKeyDown : KeyCode -> Model -> Model
+onKeyDown c m =
+    case c of
+        16 ->
+            { m | shift = True }
 
-                    _ ->
-                        case c of
-                            -- a
-                            65 ->
-                                if m.shift then
-                                    { m | mode = Insert, editor = cursorEnd m.editor }
-                                else
-                                    { m | mode = Insert, editor = cursorRight m.editor }
+        17 ->
+            { m | ctrl = True }
 
-                            -- b
-                            66 ->
-                                { m | editor = motionWordBack m.editor }
+        18 ->
+            { m | alt = True }
 
-                            -- e
-                            69 ->
-                                { m | editor = motionWordEnd m.editor }
+        _ ->
+            case m.mode of
+                Insert ->
+                    case c of
+                        -- esc
+                        27 ->
+                            { m | mode = Normal }
 
-                            -- i
-                            73 ->
-                                if m.shift then
-                                    { m | mode = Insert, editor = cursorStart m.editor }
-                                else
-                                    { m | mode = Insert }
+                        -- backspace
+                        8 ->
+                            { m | editor = deleteChar m.editor }
 
-                            -- h
-                            72 ->
-                                { m | editor = cursorLeft m.editor }
+                        -- enter
+                        -- 13 ->
+                        -- { m | buffer = (m.editor.buffer ++ "\n") }
+                        _ ->
+                            { m | editor = insertChar c m.editor }
 
-                            -- j
-                            74 ->
-                                { m | editor = cursorDown m.editor }
+                _ ->
+                    case c of
+                        -- a
+                        65 ->
+                            if m.shift then
+                                { m | mode = Insert, editor = cursorEnd m.editor }
+                            else
+                                { m | mode = Insert, editor = cursorRight m.editor }
 
-                            -- k
-                            75 ->
-                                { m | editor = cursorUp m.editor }
+                        -- b
+                        66 ->
+                            { m | editor = motionWordBack m.editor }
 
-                            -- l
-                            76 ->
-                                { m | editor = cursorRight m.editor }
+                        -- e
+                        69 ->
+                            { m | editor = motionWordEnd m.editor }
 
-                            -- w
-                            87 ->
-                                { m | editor = motionWord m.editor }
+                        -- i
+                        73 ->
+                            if m.shift then
+                                { m | mode = Insert, editor = cursorStart m.editor }
+                            else
+                                { m | mode = Insert }
 
-                            -- x
-                            88 ->
-                                { m
-                                    | editor =
-                                        m.editor
-                                            |> cursorRight
-                                            |> deleteChar
-                                }
+                        -- h
+                        72 ->
+                            { m | editor = cursorLeft m.editor }
 
-                            _ ->
-                                m
-            else
-                m
+                        -- j
+                        74 ->
+                            { m | editor = cursorDown m.editor }
+
+                        -- k
+                        75 ->
+                            { m | editor = cursorUp m.editor }
+
+                        -- l
+                        76 ->
+                            { m | editor = cursorRight m.editor }
+
+                        -- w
+                        87 ->
+                            { m | editor = motionWord m.editor }
+
+                        -- x
+                        88 ->
+                            { m
+                                | editor =
+                                    m.editor
+                                        |> cursorRight
+                                        |> deleteChar
+                            }
+
+                        _ ->
+                            m
 
 
 newLog : KeyCode -> String -> String
-newLog code log =
-    "up: " ++ (toString code) ++ " - " ++ (fromCode code) ++ "\n" ++ log
-
-
-newMode : KeyCode -> Mode -> Mode
-newMode code mode =
-    case code of
-        _ ->
-            mode
+newLog c log =
+    "up: " ++ (toString c) ++ " - " ++ (fromCode c) ++ "\n" ++ log
 
 
 fromCode : KeyCode -> String

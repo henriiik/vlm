@@ -8905,26 +8905,41 @@ var _henriiik$vlm$Main$fromCode = function (code) {
 	return _elm_lang$core$String$fromChar(
 		_elm_lang$core$Char$fromCode(code));
 };
-var _henriiik$vlm$Main$newMode = F2(
-	function (code, mode) {
-		var _p1 = code;
-		return mode;
-	});
 var _henriiik$vlm$Main$newLog = F2(
-	function (code, log) {
+	function (c, log) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
 			'up: ',
 			A2(
 				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(code),
+				_elm_lang$core$Basics$toString(c),
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					' - ',
 					A2(
 						_elm_lang$core$Basics_ops['++'],
-						_henriiik$vlm$Main$fromCode(code),
+						_henriiik$vlm$Main$fromCode(c),
 						A2(_elm_lang$core$Basics_ops['++'], '\n', log)))));
+	});
+var _henriiik$vlm$Main$onKeyUp = F2(
+	function (c, m) {
+		var _p1 = c;
+		switch (_p1) {
+			case 16:
+				return _elm_lang$core$Native_Utils.update(
+					m,
+					{shift: false});
+			case 17:
+				return _elm_lang$core$Native_Utils.update(
+					m,
+					{ctrl: false});
+			case 18:
+				return _elm_lang$core$Native_Utils.update(
+					m,
+					{alt: false});
+			default:
+				return m;
+		}
 	});
 var _henriiik$vlm$Main$splitAt = F2(
 	function (i, a) {
@@ -9220,124 +9235,120 @@ var _henriiik$vlm$Main$init = {
 		false),
 	_1: _elm_lang$core$Platform_Cmd$none
 };
-var _henriiik$vlm$Main$newModifiers = F3(
-	function (isDown, c, m) {
+var _henriiik$vlm$Main$onKeyDown = F2(
+	function (c, m) {
 		var _p7 = c;
 		switch (_p7) {
 			case 16:
 				return _elm_lang$core$Native_Utils.update(
 					m,
-					{shift: isDown});
+					{shift: true});
 			case 17:
 				return _elm_lang$core$Native_Utils.update(
 					m,
-					{ctrl: isDown});
+					{ctrl: true});
 			case 18:
 				return _elm_lang$core$Native_Utils.update(
 					m,
-					{alt: isDown});
+					{alt: true});
 			default:
-				if (isDown) {
-					var _p8 = m.mode;
-					if (_p8.ctor === 'Insert') {
-						var _p9 = c;
-						switch (_p9) {
-							case 27:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{mode: _henriiik$vlm$Main$Normal});
-							case 8:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										editor: _henriiik$vlm$Main$deleteChar(m.editor)
-									});
-							default:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										editor: A2(_henriiik$vlm$Main$insertChar, c, m.editor)
-									});
-						}
-					} else {
-						var _p10 = c;
-						switch (_p10) {
-							case 65:
-								return m.shift ? _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										mode: _henriiik$vlm$Main$Insert,
-										editor: _henriiik$vlm$Main$cursorEnd(m.editor)
-									}) : _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										mode: _henriiik$vlm$Main$Insert,
-										editor: _henriiik$vlm$Main$cursorRight(m.editor)
-									});
-							case 66:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										editor: _henriiik$vlm$Main$motionWordBack(m.editor)
-									});
-							case 69:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										editor: _henriiik$vlm$Main$motionWordEnd(m.editor)
-									});
-							case 73:
-								return m.shift ? _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										mode: _henriiik$vlm$Main$Insert,
-										editor: _henriiik$vlm$Main$cursorStart(m.editor)
-									}) : _elm_lang$core$Native_Utils.update(
-									m,
-									{mode: _henriiik$vlm$Main$Insert});
-							case 72:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										editor: _henriiik$vlm$Main$cursorLeft(m.editor)
-									});
-							case 74:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										editor: _henriiik$vlm$Main$cursorDown(m.editor)
-									});
-							case 75:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										editor: _henriiik$vlm$Main$cursorUp(m.editor)
-									});
-							case 76:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										editor: _henriiik$vlm$Main$cursorRight(m.editor)
-									});
-							case 87:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										editor: _henriiik$vlm$Main$motionWord(m.editor)
-									});
-							case 88:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{
-										editor: _henriiik$vlm$Main$deleteChar(
-											_henriiik$vlm$Main$cursorRight(m.editor))
-									});
-							default:
-								return m;
-						}
+				var _p8 = m.mode;
+				if (_p8.ctor === 'Insert') {
+					var _p9 = c;
+					switch (_p9) {
+						case 27:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{mode: _henriiik$vlm$Main$Normal});
+						case 8:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									editor: _henriiik$vlm$Main$deleteChar(m.editor)
+								});
+						default:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									editor: A2(_henriiik$vlm$Main$insertChar, c, m.editor)
+								});
 					}
 				} else {
-					return m;
+					var _p10 = c;
+					switch (_p10) {
+						case 65:
+							return m.shift ? _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									mode: _henriiik$vlm$Main$Insert,
+									editor: _henriiik$vlm$Main$cursorEnd(m.editor)
+								}) : _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									mode: _henriiik$vlm$Main$Insert,
+									editor: _henriiik$vlm$Main$cursorRight(m.editor)
+								});
+						case 66:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									editor: _henriiik$vlm$Main$motionWordBack(m.editor)
+								});
+						case 69:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									editor: _henriiik$vlm$Main$motionWordEnd(m.editor)
+								});
+						case 73:
+							return m.shift ? _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									mode: _henriiik$vlm$Main$Insert,
+									editor: _henriiik$vlm$Main$cursorStart(m.editor)
+								}) : _elm_lang$core$Native_Utils.update(
+								m,
+								{mode: _henriiik$vlm$Main$Insert});
+						case 72:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									editor: _henriiik$vlm$Main$cursorLeft(m.editor)
+								});
+						case 74:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									editor: _henriiik$vlm$Main$cursorDown(m.editor)
+								});
+						case 75:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									editor: _henriiik$vlm$Main$cursorUp(m.editor)
+								});
+						case 76:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									editor: _henriiik$vlm$Main$cursorRight(m.editor)
+								});
+						case 87:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									editor: _henriiik$vlm$Main$motionWord(m.editor)
+								});
+						case 88:
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{
+									editor: _henriiik$vlm$Main$deleteChar(
+										_henriiik$vlm$Main$cursorRight(m.editor))
+								});
+						default:
+							return m;
+					}
 				}
 		}
 	});
@@ -9346,7 +9357,7 @@ var _henriiik$vlm$Main$update = F2(
 		var _p11 = msg;
 		if (_p11.ctor === 'KeyDown') {
 			var _p12 = _p11._0;
-			var model = A3(_henriiik$vlm$Main$newModifiers, true, _p12, model);
+			var model = A2(_henriiik$vlm$Main$onKeyDown, _p12, model);
 			var log = A2(_henriiik$vlm$Main$newLog, _p12, model.log);
 			return {
 				ctor: '_Tuple2',
@@ -9356,14 +9367,9 @@ var _henriiik$vlm$Main$update = F2(
 				_1: _elm_lang$core$Platform_Cmd$none
 			};
 		} else {
-			var _p13 = _p11._0;
-			var model = A3(_henriiik$vlm$Main$newModifiers, false, _p13, model);
-			var mode = A2(_henriiik$vlm$Main$newMode, _p13, model.mode);
 			return {
 				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{mode: mode}),
+				_0: A2(_henriiik$vlm$Main$onKeyUp, _p11._0, model),
 				_1: _elm_lang$core$Platform_Cmd$none
 			};
 		}
