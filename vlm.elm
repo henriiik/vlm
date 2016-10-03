@@ -248,6 +248,45 @@ insertChar c e =
         |> cursorRight
 
 
+insertLine : Editor -> Editor
+insertLine e =
+    let
+        split =
+            splitAt e.cursor.col (currentLine e)
+    in
+        e
+
+
+bufLeft : Int -> Buffer -> Buffer
+bufLeft i b =
+    Array.slice 0 i b
+
+
+bufRight : Int -> Buffer -> Buffer
+bufRight i b =
+    Array.slice i (Array.length b) b
+
+
+bufInsertAt : Int -> String -> Buffer -> Buffer
+bufInsertAt i s b =
+    Array.append (Array.push s (bufLeft i b)) (bufRight i b)
+
+
+insertLineAt : Int -> Editor -> Editor
+insertLineAt i e =
+    { e | buffer = bufInsertAt i "" e.buffer, cursor = Cursor i 0 }
+
+
+insertLineBefore : Editor -> Editor
+insertLineBefore e =
+    insertLineAt e.cursor.row e
+
+
+insertLineAfter : Editor -> Editor
+insertLineAfter e =
+    insertLineAt (e.cursor.row + 1) e
+
+
 init : ( Model, Cmd Msg )
 init =
     ( Model
@@ -371,6 +410,14 @@ onKeyPress c m =
                 65 ->
                     { m | mode = Insert, editor = cursorEnd m.editor }
 
+                -- I
+                73 ->
+                    { m | mode = Insert, editor = cursorStart m.editor }
+
+                -- O
+                79 ->
+                    { m | editor = insertLineBefore m.editor, mode = Insert }
+
                 -- a
                 97 ->
                     { m | mode = Insert, editor = cursorRight m.editor }
@@ -383,17 +430,13 @@ onKeyPress c m =
                 101 ->
                     { m | editor = motionWordEnd m.editor }
 
-                -- I
-                73 ->
-                    { m | mode = Insert, editor = cursorStart m.editor }
+                -- h
+                104 ->
+                    { m | editor = cursorLeft m.editor }
 
                 -- i
                 105 ->
                     { m | mode = Insert }
-
-                -- h
-                104 ->
-                    { m | editor = cursorLeft m.editor }
 
                 -- j
                 106 ->
@@ -406,6 +449,10 @@ onKeyPress c m =
                 -- l
                 108 ->
                     { m | editor = cursorRight m.editor }
+
+                -- o
+                111 ->
+                    { m | editor = insertLineAfter m.editor, mode = Insert }
 
                 -- w
                 119 ->
@@ -472,7 +519,7 @@ bufferPre editor =
     pre
         [ style
             [ ( "background", "white" )
-            , ( "width", (asPx (editor.width * 15)) )
+            , ( "width", (asPx (editor.width * 9)) )
             , ( "height", (asPx (editor.height * 15)) )
             ]
         ]
