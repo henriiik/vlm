@@ -218,10 +218,17 @@ deleteAt i a =
         (String.dropRight 1 (fst split)) ++ snd split
 
 
-deleteChar : Editor -> Editor
-deleteChar e =
+deleteCharLeft : Editor -> Editor
+deleteCharLeft e =
     e
         |> replaceCurrentLine (deleteAt e.cursor.col (currentLine e))
+        |> cursorLeft
+
+
+deleteCharRight : Editor -> Editor
+deleteCharRight e =
+    e
+        |> replaceCurrentLine (deleteAt (e.cursor.col + 1) (currentLine e))
         |> cursorLeft
 
 
@@ -266,6 +273,7 @@ init =
 type Msg
     = KeyDown KeyCode
     | KeyUp KeyCode
+    | KeyPress KeyCode
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -277,12 +285,22 @@ update msg model =
                     onKeyDown code model
 
                 log =
-                    newLog code model.log
+                    newLog "down" code model.log
             in
                 ( { model | log = log }, Cmd.none )
 
         KeyUp code ->
             ( onKeyUp code model, Cmd.none )
+
+        KeyPress code ->
+            let
+                model =
+                    onKeyPress code model
+
+                log =
+                    newLog "press" code model.log
+            in
+                ( { model | log = log }, Cmd.none )
 
 
 onKeyUp : KeyCode -> Model -> Model
@@ -323,74 +341,92 @@ onKeyDown c m =
 
                         -- backspace
                         8 ->
-                            { m | editor = deleteChar m.editor }
+                            { m | editor = deleteCharLeft m.editor }
 
-                        -- enter
-                        -- 13 ->
-                        -- { m | buffer = (m.editor.buffer ++ "\n") }
-                        _ ->
-                            { m | editor = insertChar c m.editor }
-
-                _ ->
-                    case c of
-                        -- a
-                        65 ->
-                            if m.shift then
-                                { m | mode = Insert, editor = cursorEnd m.editor }
-                            else
-                                { m | mode = Insert, editor = cursorRight m.editor }
-
-                        -- b
-                        66 ->
-                            { m | editor = motionWordBack m.editor }
-
-                        -- e
-                        69 ->
-                            { m | editor = motionWordEnd m.editor }
-
-                        -- i
-                        73 ->
-                            if m.shift then
-                                { m | mode = Insert, editor = cursorStart m.editor }
-                            else
-                                { m | mode = Insert }
-
-                        -- h
-                        72 ->
-                            { m | editor = cursorLeft m.editor }
-
-                        -- j
-                        74 ->
-                            { m | editor = cursorDown m.editor }
-
-                        -- k
-                        75 ->
-                            { m | editor = cursorUp m.editor }
-
-                        -- l
-                        76 ->
-                            { m | editor = cursorRight m.editor }
-
-                        -- w
-                        87 ->
-                            { m | editor = motionWord m.editor }
-
-                        -- x
-                        88 ->
-                            { m
-                                | editor =
-                                    m.editor
-                                        |> cursorRight
-                                        |> deleteChar
-                            }
+                        -- delete
+                        46 ->
+                            { m | editor = deleteCharRight m.editor }
 
                         _ ->
                             m
 
+                _ ->
+                    m
 
-newLog : KeyCode -> String -> String
-newLog c log =
-    "up: " ++ (toString c) ++ " - " ++ (fromCode c) ++ "\n" ++ log
+
+onKeyPress : KeyCode -> Model -> Model
+onKeyPress c m =
+    case m.mode of
+        Insert ->
+            case c of
+                -- enter
+                -- 13 ->
+                -- { m | buffer = (m.editor.buffer ++ "\n") }
+                _ ->
+                    { m | editor = insertChar c m.editor }
+
+        _ ->
+            case c of
+                -- A
+                65 ->
+                    { m | mode = Insert, editor = cursorEnd m.editor }
+
+                -- a
+                97 ->
+                    { m | mode = Insert, editor = cursorRight m.editor }
+
+                -- b
+                98 ->
+                    { m | editor = motionWordBack m.editor }
+
+                -- e
+                101 ->
+                    { m | editor = motionWordEnd m.editor }
+
+                -- I
+                73 ->
+                    { m | mode = Insert, editor = cursorStart m.editor }
+
+                -- i
+                105 ->
+                    { m | mode = Insert }
+
+                -- h
+                104 ->
+                    { m | editor = cursorLeft m.editor }
+
+                -- j
+                106 ->
+                    { m | editor = cursorDown m.editor }
+
+                -- k
+                107 ->
+                    { m | editor = cursorUp m.editor }
+
+                -- l
+                108 ->
+                    { m | editor = cursorRight m.editor }
+
+                -- w
+                119 ->
+                    { m | editor = motionWord m.editor }
+
+                -- x
+                120 ->
+                    { m
+                        | editor =
+                            m.editor
+                                |> cursorRight
+                                |> deleteCharLeft
+                    }
+
+                _ ->
+                    m
+
+
+newLog : String -> KeyCode -> String -> String
+newLog a c log =
+    a ++ ": " ++ (toString c) ++ " - " ++ (fromCode c) ++ "\n" ++ log
 
 
 fromCode : KeyCode -> String
@@ -407,6 +443,7 @@ subscriptions model =
     Sub.batch
         [ Keyboard.ups KeyUp
         , Keyboard.downs KeyDown
+        , Keyboard.presses KeyPress
         ]
 
 
