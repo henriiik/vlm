@@ -3,6 +3,7 @@ module Main exposing (..)
 import Array
 import Char
 import Cursor exposing (..)
+import Buffer exposing (Buffer)
 import Debug
 import Html exposing (..)
 import Html.App
@@ -29,10 +30,6 @@ main =
 type Mode
     = Normal
     | Insert
-
-
-type alias Buffer =
-    Array.Array String
 
 
 type alias Editor =
@@ -248,33 +245,18 @@ insertChar c e =
         |> cursorRight
 
 
-insertLine : Editor -> Editor
-insertLine e =
-    let
-        split =
-            splitAt e.cursor.col (currentLine e)
-    in
-        e
-
-
-bufLeft : Int -> Buffer -> Buffer
-bufLeft i b =
-    Array.slice 0 i b
-
-
-bufRight : Int -> Buffer -> Buffer
-bufRight i b =
-    Array.slice i (Array.length b) b
-
-
-bufInsertAt : Int -> String -> Buffer -> Buffer
-bufInsertAt i s b =
-    Array.append (Array.push s (bufLeft i b)) (bufRight i b)
+-- insertLine : Editor -> Editor
+-- insertLine e =
+--     let
+--         split =
+--             splitAt e.cursor.col (currentLine e)
+--     in
+--         e
 
 
 insertLineAt : Int -> Editor -> Editor
 insertLineAt i e =
-    { e | buffer = bufInsertAt i "" e.buffer, cursor = Cursor i 0 }
+    { e | buffer = Buffer.insert i "" e.buffer, cursor = Cursor i 0 }
 
 
 insertLineBefore : Editor -> Editor

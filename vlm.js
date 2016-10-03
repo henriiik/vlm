@@ -8732,6 +8732,33 @@ var _elm_lang$keyboard$Keyboard$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Keyboard'] = {pkg: 'elm-lang/keyboard', init: _elm_lang$keyboard$Keyboard$init, onEffects: _elm_lang$keyboard$Keyboard$onEffects, onSelfMsg: _elm_lang$keyboard$Keyboard$onSelfMsg, tag: 'sub', subMap: _elm_lang$keyboard$Keyboard$subMap};
 
+var _henriiik$vlm$Buffer$replace = F3(
+	function (i, s, b) {
+		return A3(_elm_lang$core$Array$set, i, s, b);
+	});
+var _henriiik$vlm$Buffer$splitRight = F2(
+	function (i, b) {
+		return A3(
+			_elm_lang$core$Array$slice,
+			i,
+			_elm_lang$core$Array$length(b),
+			b);
+	});
+var _henriiik$vlm$Buffer$splitLeft = F2(
+	function (i, b) {
+		return A3(_elm_lang$core$Array$slice, 0, i, b);
+	});
+var _henriiik$vlm$Buffer$insert = F3(
+	function (i, s, b) {
+		return A2(
+			_elm_lang$core$Array$append,
+			A2(
+				_elm_lang$core$Array$push,
+				s,
+				A2(_henriiik$vlm$Buffer$splitLeft, i, b)),
+			A2(_henriiik$vlm$Buffer$splitRight, i, b));
+	});
+
 var _henriiik$vlm$Cursor$withRow = F2(
 	function (i, c) {
 		return _elm_lang$core$Native_Utils.update(
@@ -8944,34 +8971,12 @@ var _henriiik$vlm$Main$onKeyUp = F2(
 				return m;
 		}
 	});
-var _henriiik$vlm$Main$bufRight = F2(
-	function (i, b) {
-		return A3(
-			_elm_lang$core$Array$slice,
-			i,
-			_elm_lang$core$Array$length(b),
-			b);
-	});
-var _henriiik$vlm$Main$bufLeft = F2(
-	function (i, b) {
-		return A3(_elm_lang$core$Array$slice, 0, i, b);
-	});
-var _henriiik$vlm$Main$bufInsertAt = F3(
-	function (i, s, b) {
-		return A2(
-			_elm_lang$core$Array$append,
-			A2(
-				_elm_lang$core$Array$push,
-				s,
-				A2(_henriiik$vlm$Main$bufLeft, i, b)),
-			A2(_henriiik$vlm$Main$bufRight, i, b));
-	});
 var _henriiik$vlm$Main$insertLineAt = F2(
 	function (i, e) {
 		return _elm_lang$core$Native_Utils.update(
 			e,
 			{
-				buffer: A3(_henriiik$vlm$Main$bufInsertAt, i, '', e.buffer),
+				buffer: A3(_henriiik$vlm$Buffer$insert, i, '', e.buffer),
 				cursor: A2(_henriiik$vlm$Cursor$Cursor, i, 0)
 			});
 	});
@@ -9088,13 +9093,6 @@ var _henriiik$vlm$Main$lineAt = F2(
 	});
 var _henriiik$vlm$Main$currentLine = function (editor) {
 	return A2(_henriiik$vlm$Main$lineAt, editor, editor.cursor.row);
-};
-var _henriiik$vlm$Main$insertLine = function (e) {
-	var split = A2(
-		_henriiik$vlm$Main$splitAt,
-		e.cursor.col,
-		_henriiik$vlm$Main$currentLine(e));
-	return e;
 };
 var _henriiik$vlm$Main$prevLine = function (editor) {
 	return A2(_henriiik$vlm$Main$lineAt, editor, editor.cursor.row - 1);
