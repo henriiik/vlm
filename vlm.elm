@@ -30,6 +30,8 @@ main =
 type Mode
     = Normal
     | Insert
+    | Visual
+    | VisualLine
 
 
 type alias Editor =
@@ -245,28 +247,38 @@ insertChar c e =
         |> cursorRight
 
 
--- insertLine : Editor -> Editor
--- insertLine e =
---     let
---         split =
---             splitAt e.cursor.col (currentLine e)
---     in
---         e
+insertLineAt : String -> Int -> Editor -> Editor
+insertLineAt s i e =
+    { e | buffer = Buffer.insert i s e.buffer, cursor = Cursor i 0 }
 
 
-insertLineAt : Int -> Editor -> Editor
-insertLineAt i e =
-    { e | buffer = Buffer.insert i "" e.buffer, cursor = Cursor i 0 }
+insertEmptyLineAt : Int -> Editor -> Editor
+insertEmptyLineAt i e =
+    insertLineAt "" i e
+
+
+splitLine : Editor -> Editor
+splitLine e =
+    let
+        split =
+            Debug.log "split" splitAt e.cursor.col (currentLine e)
+    in
+        e
+            |> replaceCurrentLine (fst split)
+            |> insertLineAt (snd split) (e.cursor.row + 1)
+            -- |> cursorDown
+            |>
+                cursorStart
 
 
 insertLineBefore : Editor -> Editor
 insertLineBefore e =
-    insertLineAt e.cursor.row e
+    insertEmptyLineAt e.cursor.row e
 
 
 insertLineAfter : Editor -> Editor
 insertLineAfter e =
-    insertLineAt (e.cursor.row + 1) e
+    insertEmptyLineAt (e.cursor.row + 1) e
 
 
 init : ( Model, Cmd Msg )
@@ -352,6 +364,18 @@ onKeyDown c m =
         18 ->
             { m | alt = True }
 
+        37 ->
+            { m | editor = cursorLeft m.editor }
+
+        38 ->
+            { m | editor = cursorUp m.editor }
+
+        39 ->
+            { m | editor = cursorRight m.editor }
+
+        40 ->
+            { m | editor = cursorDown m.editor }
+
         _ ->
             case m.mode of
                 Insert ->
@@ -381,8 +405,9 @@ onKeyPress c m =
         Insert ->
             case c of
                 -- enter
-                -- 13 ->
-                -- { m | buffer = (m.editor.buffer ++ "\n") }
+                13 ->
+                    { m | editor = splitLine m.editor }
+
                 _ ->
                     { m | editor = insertChar c m.editor }
 
