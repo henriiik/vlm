@@ -1,4 +1,14 @@
-module Buffer exposing (Buffer, splitLeft, splitRight, insert, replace, remove)
+module Buffer
+    exposing
+        ( Buffer
+        , get
+        , insert
+        , remove
+        , replace
+        , set
+        , splitLeft
+        , splitRight
+        )
 
 import Array
 
@@ -29,4 +39,16 @@ remove i b =
 
 replace : Int -> String -> Buffer -> Buffer
 replace i s b =
+    Array.set i s b
+
+
+get : Int -> Buffer -> String
+get i b =
+    b
+        |> Array.get i
+        |> Maybe.withDefault ""
+
+
+set : Int -> String -> Buffer -> Buffer
+set i s b =
     Array.set i s b

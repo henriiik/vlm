@@ -8732,6 +8732,17 @@ var _elm_lang$keyboard$Keyboard$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Keyboard'] = {pkg: 'elm-lang/keyboard', init: _elm_lang$keyboard$Keyboard$init, onEffects: _elm_lang$keyboard$Keyboard$onEffects, onSelfMsg: _elm_lang$keyboard$Keyboard$onSelfMsg, tag: 'sub', subMap: _elm_lang$keyboard$Keyboard$subMap};
 
+var _henriiik$vlm$Buffer$set = F3(
+	function (i, s, b) {
+		return A3(_elm_lang$core$Array$set, i, s, b);
+	});
+var _henriiik$vlm$Buffer$get = F2(
+	function (i, b) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			'',
+			A2(_elm_lang$core$Array$get, i, b));
+	});
 var _henriiik$vlm$Buffer$replace = F3(
 	function (i, s, b) {
 		return A3(_elm_lang$core$Array$set, i, s, b);
@@ -9091,28 +9102,27 @@ var _henriiik$vlm$Main$wordIndexes = function (a) {
 		_elm_lang$core$Regex$regex('\\b\\w'),
 		a);
 };
+var _henriiik$vlm$Main$nextLine = function (e) {
+	return A2(_henriiik$vlm$Buffer$get, e.cursor.row + 1, e.buffer);
+};
+var _henriiik$vlm$Main$prevLine = function (e) {
+	return A2(_henriiik$vlm$Buffer$get, e.cursor.row - 1, e.buffer);
+};
+var _henriiik$vlm$Main$currentLine = function (e) {
+	return A2(_henriiik$vlm$Buffer$get, e.cursor.row, e.buffer);
+};
 var _henriiik$vlm$Main$replaceLineAt = F3(
-	function (i, l, e) {
+	function (i, s, e) {
 		return _elm_lang$core$Native_Utils.update(
 			e,
 			{
-				buffer: A3(_elm_lang$core$Array$set, i, l, e.buffer)
+				buffer: A3(_henriiik$vlm$Buffer$set, i, s, e.buffer)
 			});
 	});
 var _henriiik$vlm$Main$replaceCurrentLine = F2(
-	function (l, e) {
-		return A3(_henriiik$vlm$Main$replaceLineAt, e.cursor.row, l, e);
+	function (s, e) {
+		return A3(_henriiik$vlm$Main$replaceLineAt, e.cursor.row, s, e);
 	});
-var _henriiik$vlm$Main$lineAt = F2(
-	function (i, e) {
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, i, e.buffer));
-	});
-var _henriiik$vlm$Main$currentLine = function (e) {
-	return A2(_henriiik$vlm$Main$lineAt, e.cursor.row, e);
-};
 var _henriiik$vlm$Main$deleteCharRight = function (e) {
 	return A2(
 		_henriiik$vlm$Main$replaceCurrentLine,
@@ -9121,12 +9131,6 @@ var _henriiik$vlm$Main$deleteCharRight = function (e) {
 			e.cursor.col + 1,
 			_henriiik$vlm$Main$currentLine(e)),
 		e);
-};
-var _henriiik$vlm$Main$prevLine = function (e) {
-	return A2(_henriiik$vlm$Main$lineAt, e.cursor.row - 1, e);
-};
-var _henriiik$vlm$Main$nextLine = function (e) {
-	return A2(_henriiik$vlm$Main$lineAt, e.cursor.row + 1, e);
 };
 var _henriiik$vlm$Main$cursorEnd = function (e) {
 	return _elm_lang$core$Native_Utils.update(

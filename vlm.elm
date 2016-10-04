@@ -4,7 +4,6 @@ import Array
 import Char
 import Cursor exposing (..)
 import Buffer exposing (Buffer)
-import Debug
 import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (style)
@@ -98,34 +97,29 @@ cursorEnd e =
     { e | cursor = (withCol (String.length (currentLine e)) e.cursor) }
 
 
-lineAt : Int -> Editor -> String
-lineAt i e =
-    Maybe.withDefault "" (Array.get i e.buffer)
-
-
 replaceLineAt : Int -> String -> Editor -> Editor
-replaceLineAt i l e =
-    { e | buffer = (Array.set i l e.buffer) }
+replaceLineAt i s e =
+    { e | buffer = (Buffer.set i s e.buffer) }
 
 
 replaceCurrentLine : String -> Editor -> Editor
-replaceCurrentLine l e =
-    replaceLineAt e.cursor.row l e
+replaceCurrentLine s e =
+    replaceLineAt e.cursor.row s e
 
 
 currentLine : Editor -> String
 currentLine e =
-    lineAt e.cursor.row e
+    Buffer.get e.cursor.row e.buffer
 
 
 prevLine : Editor -> String
 prevLine e =
-    lineAt (e.cursor.row - 1) e
+    Buffer.get (e.cursor.row - 1) e.buffer
 
 
 nextLine : Editor -> String
 nextLine e =
-    lineAt (e.cursor.row + 1) e
+    Buffer.get (e.cursor.row + 1) e.buffer
 
 
 wordIndexes : String -> List Regex.Match
