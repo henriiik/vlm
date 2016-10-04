@@ -98,9 +98,9 @@ cursorEnd e =
     { e | cursor = (withCol (String.length (currentLine e)) e.cursor) }
 
 
-lineAt : Editor -> Int -> String
-lineAt editor i =
-    Maybe.withDefault "" (Array.get i editor.buffer)
+lineAt : Int -> Editor -> String
+lineAt i e =
+    Maybe.withDefault "" (Array.get i e.buffer)
 
 
 replaceLineAt : Int -> String -> Editor -> Editor
@@ -114,18 +114,18 @@ replaceCurrentLine l e =
 
 
 currentLine : Editor -> String
-currentLine editor =
-    lineAt editor editor.cursor.row
+currentLine e =
+    lineAt e.cursor.row e
 
 
 prevLine : Editor -> String
-prevLine editor =
-    lineAt editor (editor.cursor.row - 1)
+prevLine e =
+    lineAt (e.cursor.row - 1) e
 
 
 nextLine : Editor -> String
-nextLine editor =
-    lineAt editor (editor.cursor.row + 1)
+nextLine e =
+    lineAt (e.cursor.row + 1) e
 
 
 wordIndexes : String -> List Regex.Match
@@ -219,16 +219,18 @@ deleteAt i a =
 
 deleteCharLeft : Editor -> Editor
 deleteCharLeft e =
-    e
-        |> replaceCurrentLine (deleteAt e.cursor.col (currentLine e))
-        |> cursorLeft
+    if e.cursor.col == 0 && e.cursor.row /= 0 then
+        joinLines e
+    else
+        e
+            |> replaceCurrentLine (deleteAt e.cursor.col (currentLine e))
+            |> cursorLeft
 
 
 deleteCharRight : Editor -> Editor
 deleteCharRight e =
     e
         |> replaceCurrentLine (deleteAt (e.cursor.col + 1) (currentLine e))
-        |> cursorLeft
 
 
 insertAt : Int -> String -> String -> String
@@ -252,16 +254,33 @@ insertLineAt s i e =
     { e | buffer = Buffer.insert i s e.buffer, cursor = Cursor i 0 }
 
 
+removeLineAt : Int -> Editor -> Editor
+removeLineAt i e =
+    { e | buffer = Buffer.remove i e.buffer }
+
+
 insertEmptyLineAt : Int -> Editor -> Editor
 insertEmptyLineAt i e =
     insertLineAt "" i e
+
+
+joinLines : Editor -> Editor
+joinLines e =
+    let
+        line =
+            (prevLine e) ++ (currentLine e)
+    in
+        e
+            |> cursorUp
+            |> cursorEnd
+            |> replaceCurrentLine line
 
 
 splitLine : Editor -> Editor
 splitLine e =
     let
         split =
-            Debug.log "split" splitAt e.cursor.col (currentLine e)
+            splitAt e.cursor.col (currentLine e)
     in
         e
             |> replaceCurrentLine (fst split)

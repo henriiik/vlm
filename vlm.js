@@ -8758,6 +8758,13 @@ var _henriiik$vlm$Buffer$insert = F3(
 				A2(_henriiik$vlm$Buffer$splitLeft, i, b)),
 			A2(_henriiik$vlm$Buffer$splitRight, i, b));
 	});
+var _henriiik$vlm$Buffer$remove = F2(
+	function (i, b) {
+		return A2(
+			_elm_lang$core$Array$append,
+			A2(_henriiik$vlm$Buffer$splitLeft, i, b),
+			A2(_henriiik$vlm$Buffer$splitRight, i + 1, b));
+	});
 
 var _henriiik$vlm$Cursor$withRow = F2(
 	function (i, c) {
@@ -8971,6 +8978,14 @@ var _henriiik$vlm$Main$onKeyUp = F2(
 				return m;
 		}
 	});
+var _henriiik$vlm$Main$removeLineAt = F2(
+	function (i, e) {
+		return _elm_lang$core$Native_Utils.update(
+			e,
+			{
+				buffer: A2(_henriiik$vlm$Buffer$remove, i, e.buffer)
+			});
+	});
 var _henriiik$vlm$Main$insertLineAt = F3(
 	function (s, i, e) {
 		return _elm_lang$core$Native_Utils.update(
@@ -9089,20 +9104,29 @@ var _henriiik$vlm$Main$replaceCurrentLine = F2(
 		return A3(_henriiik$vlm$Main$replaceLineAt, e.cursor.row, l, e);
 	});
 var _henriiik$vlm$Main$lineAt = F2(
-	function (editor, i) {
+	function (i, e) {
 		return A2(
 			_elm_lang$core$Maybe$withDefault,
 			'',
-			A2(_elm_lang$core$Array$get, i, editor.buffer));
+			A2(_elm_lang$core$Array$get, i, e.buffer));
 	});
-var _henriiik$vlm$Main$currentLine = function (editor) {
-	return A2(_henriiik$vlm$Main$lineAt, editor, editor.cursor.row);
+var _henriiik$vlm$Main$currentLine = function (e) {
+	return A2(_henriiik$vlm$Main$lineAt, e.cursor.row, e);
 };
-var _henriiik$vlm$Main$prevLine = function (editor) {
-	return A2(_henriiik$vlm$Main$lineAt, editor, editor.cursor.row - 1);
+var _henriiik$vlm$Main$deleteCharRight = function (e) {
+	return A2(
+		_henriiik$vlm$Main$replaceCurrentLine,
+		A2(
+			_henriiik$vlm$Main$deleteAt,
+			e.cursor.col + 1,
+			_henriiik$vlm$Main$currentLine(e)),
+		e);
 };
-var _henriiik$vlm$Main$nextLine = function (editor) {
-	return A2(_henriiik$vlm$Main$lineAt, editor, editor.cursor.row + 1);
+var _henriiik$vlm$Main$prevLine = function (e) {
+	return A2(_henriiik$vlm$Main$lineAt, e.cursor.row - 1, e);
+};
+var _henriiik$vlm$Main$nextLine = function (e) {
+	return A2(_henriiik$vlm$Main$lineAt, e.cursor.row + 1, e);
 };
 var _henriiik$vlm$Main$cursorEnd = function (e) {
 	return _elm_lang$core$Native_Utils.update(
@@ -9123,9 +9147,7 @@ var _henriiik$vlm$Main$cursorStart = function (e) {
 		});
 };
 var _henriiik$vlm$Main$splitLine = function (e) {
-	var split = A4(
-		_elm_lang$core$Debug$log,
-		'split',
+	var split = A2(
 		_henriiik$vlm$Main$splitAt,
 		e.cursor.col,
 		_henriiik$vlm$Main$currentLine(e));
@@ -9174,6 +9196,17 @@ var _henriiik$vlm$Main$motionWordBack = function (e) {
 			return _henriiik$vlm$Main$cursorUp(e);
 		}
 	}
+};
+var _henriiik$vlm$Main$joinLines = function (e) {
+	var line = A2(
+		_elm_lang$core$Basics_ops['++'],
+		_henriiik$vlm$Main$prevLine(e),
+		_henriiik$vlm$Main$currentLine(e));
+	return A2(
+		_henriiik$vlm$Main$replaceCurrentLine,
+		line,
+		_henriiik$vlm$Main$cursorEnd(
+			_henriiik$vlm$Main$cursorUp(e)));
 };
 var _henriiik$vlm$Main$cursorDown = function (editor) {
 	var row = A2(_elm_lang$core$Basics$min, editor.cursor.row + 1, editor.height - 1);
@@ -9263,22 +9296,12 @@ var _henriiik$vlm$Main$cursorLeft = function (editor) {
 		});
 };
 var _henriiik$vlm$Main$deleteCharLeft = function (e) {
-	return _henriiik$vlm$Main$cursorLeft(
+	return (_elm_lang$core$Native_Utils.eq(e.cursor.col, 0) && (!_elm_lang$core$Native_Utils.eq(e.cursor.row, 0))) ? _henriiik$vlm$Main$joinLines(e) : _henriiik$vlm$Main$cursorLeft(
 		A2(
 			_henriiik$vlm$Main$replaceCurrentLine,
 			A2(
 				_henriiik$vlm$Main$deleteAt,
 				e.cursor.col,
-				_henriiik$vlm$Main$currentLine(e)),
-			e));
-};
-var _henriiik$vlm$Main$deleteCharRight = function (e) {
-	return _henriiik$vlm$Main$cursorLeft(
-		A2(
-			_henriiik$vlm$Main$replaceCurrentLine,
-			A2(
-				_henriiik$vlm$Main$deleteAt,
-				e.cursor.col + 1,
 				_henriiik$vlm$Main$currentLine(e)),
 			e));
 };

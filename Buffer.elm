@@ -1,4 +1,4 @@
-module Buffer exposing (Buffer, splitLeft, splitRight, insert, replace)
+module Buffer exposing (Buffer, splitLeft, splitRight, insert, replace, remove)
 
 import Array
 
@@ -20,6 +20,11 @@ splitRight i b =
 insert : Int -> String -> Buffer -> Buffer
 insert i s b =
     Array.append (Array.push s (splitLeft i b)) (splitRight i b)
+
+
+remove : Int -> Buffer -> Buffer
+remove i b =
+    Array.append (splitLeft i b) (splitRight (i + 1) b)
 
 
 replace : Int -> String -> Buffer -> Buffer
