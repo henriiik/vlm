@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Array
 import Char
-import Cursor exposing (..)
+import Cursor exposing (Cursor)
 import Buffer exposing (Buffer)
 import Html exposing (..)
 import Html.App
@@ -57,7 +57,7 @@ cursorLeft editor =
         col =
             (max (editor.cursor.col - 1) 0)
     in
-        { editor | cursor = (withCol col editor.cursor) }
+        { editor | cursor = (Cursor.withCol col editor.cursor) }
 
 
 cursorRight : Editor -> Editor
@@ -66,7 +66,7 @@ cursorRight editor =
         col =
             (min (editor.cursor.col + 1) (String.length (currentLine editor)))
     in
-        { editor | cursor = (withCol col editor.cursor) }
+        { editor | cursor = (Cursor.withCol col editor.cursor) }
 
 
 cursorDown : Editor -> Editor
@@ -75,7 +75,7 @@ cursorDown editor =
         row =
             (min (editor.cursor.row + 1) (editor.height - 1))
     in
-        { editor | cursor = (withRow row editor.cursor) }
+        { editor | cursor = (Cursor.withRow row editor.cursor) }
 
 
 cursorUp : Editor -> Editor
@@ -84,17 +84,17 @@ cursorUp editor =
         row =
             (max (editor.cursor.row - 1) 0)
     in
-        { editor | cursor = (withRow row editor.cursor) }
+        { editor | cursor = (Cursor.withRow row editor.cursor) }
 
 
 cursorStart : Editor -> Editor
 cursorStart e =
-    { e | cursor = (withCol 0 e.cursor) }
+    { e | cursor = (Cursor.withCol 0 e.cursor) }
 
 
 cursorEnd : Editor -> Editor
 cursorEnd e =
-    { e | cursor = (withCol (String.length (currentLine e)) e.cursor) }
+    { e | cursor = (Cursor.withCol (String.length (currentLine e)) e.cursor) }
 
 
 replaceLineAt : Int -> String -> Editor -> Editor
@@ -161,7 +161,7 @@ motionWord : Editor -> Editor
 motionWord e =
     case nextIndex e.cursor.col (wordIndexes (currentLine e)) of
         Just col ->
-            { e | cursor = withCol col e.cursor }
+            { e | cursor = Cursor.withCol col e.cursor }
 
         Nothing ->
             cursorStart (cursorDown e)
@@ -171,12 +171,12 @@ motionWordBack : Editor -> Editor
 motionWordBack e =
     case prevIndex e.cursor.col (wordIndexes (currentLine e)) of
         Just col ->
-            { e | cursor = withCol col e.cursor }
+            { e | cursor = Cursor.withCol col e.cursor }
 
         Nothing ->
             case lastIndex (wordIndexes (prevLine e)) of
                 Just col ->
-                    cursorUp { e | cursor = withCol col e.cursor }
+                    cursorUp { e | cursor = Cursor.withCol col e.cursor }
 
                 Nothing ->
                     cursorUp e
@@ -186,12 +186,12 @@ motionWordEnd : Editor -> Editor
 motionWordEnd e =
     case nextIndex e.cursor.col (wordEndIndexes (currentLine e)) of
         Just col ->
-            { e | cursor = withCol col e.cursor }
+            { e | cursor = Cursor.withCol col e.cursor }
 
         Nothing ->
             case nextIndex 0 (wordEndIndexes (nextLine e)) of
                 Just col ->
-                    cursorDown { e | cursor = withCol col e.cursor }
+                    cursorDown { e | cursor = Cursor.withCol col e.cursor }
 
                 Nothing ->
                     cursorDown e
