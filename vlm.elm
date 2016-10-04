@@ -35,6 +35,7 @@ type Mode
 
 type alias Editor =
     { cursor : Cursor
+    , visualCursor : Cursor
     , buffer : Buffer
     , width : Int
     , height : Int
@@ -216,15 +217,12 @@ deleteCharLeft e =
     if e.cursor.col == 0 && e.cursor.row /= 0 then
         joinLines e
     else
-        e
-            |> replaceCurrentLine (deleteAt e.cursor.col (currentLine e))
-            |> cursorLeft
+        replaceCurrentLine (deleteAt e.cursor.col (currentLine e)) e
 
 
 deleteCharRight : Editor -> Editor
 deleteCharRight e =
-    e
-        |> replaceCurrentLine (deleteAt (e.cursor.col + 1) (currentLine e))
+    replaceCurrentLine (deleteAt (e.cursor.col + 1) (currentLine e)) e
 
 
 insertAt : Int -> String -> String -> String
@@ -292,10 +290,36 @@ insertLineAfter e =
     insertEmptyLineAt (e.cursor.row + 1) e
 
 
+setVisualCursor : Cursor -> Editor -> Editor
+setVisualCursor c e =
+    { e | visualCursor = c }
+
+
+startVisualMode : Model -> Model
+startVisualMode m =
+    { m | mode = Visual, editor = setVisualCursor m.editor.cursor m.editor }
+
+
+startInsertMode : Model -> Model
+startInsertMode m =
+    { m | mode = Insert }
+
+
+motionLeft : Model -> Model
+motionLeft m =
+    { m | editor = cursorLeft m.editor }
+
+
+motionRight : Model -> Model
+motionRight m =
+    { m | editor = cursorRight m.editor }
+
+
 init : ( Model, Cmd Msg )
 init =
     ( Model
         (Editor
+            (Cursor 0 0)
             (Cursor 0 0)
             (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line" ])
             40
@@ -376,13 +400,13 @@ onKeyDown c m =
             { m | alt = True }
 
         37 ->
-            { m | editor = cursorLeft m.editor }
+            motionLeft m
 
         38 ->
             { m | editor = cursorUp m.editor }
 
         39 ->
-            { m | editor = cursorRight m.editor }
+            motionRight m
 
         40 ->
             { m | editor = cursorDown m.editor }
@@ -397,11 +421,20 @@ onKeyDown c m =
 
                         -- backspace
                         8 ->
-                            { m | editor = deleteCharLeft m.editor }
+                            motionLeft { m | editor = deleteCharLeft m.editor }
 
                         -- delete
                         46 ->
                             { m | editor = deleteCharRight m.editor }
+
+                        _ ->
+                            m
+
+                Visual ->
+                    case c of
+                        -- esc
+                        27 ->
+                            { m | mode = Normal }
 
                         _ ->
                             m
@@ -438,7 +471,7 @@ onKeyPress c m =
 
                 -- a
                 97 ->
-                    { m | mode = Insert, editor = cursorRight m.editor }
+                    startInsertMode (motionRight m)
 
                 -- b
                 98 ->
@@ -450,7 +483,7 @@ onKeyPress c m =
 
                 -- h
                 104 ->
-                    { m | editor = cursorLeft m.editor }
+                    motionLeft m
 
                 -- i
                 105 ->
@@ -466,11 +499,15 @@ onKeyPress c m =
 
                 -- l
                 108 ->
-                    { m | editor = cursorRight m.editor }
+                    motionRight m
 
                 -- o
                 111 ->
                     { m | editor = insertLineAfter m.editor, mode = Insert }
+
+                -- v
+                118 ->
+                    startVisualMode m
 
                 -- w
                 119 ->
@@ -478,12 +515,7 @@ onKeyPress c m =
 
                 -- x
                 120 ->
-                    { m
-                        | editor =
-                            m.editor
-                                |> cursorRight
-                                |> deleteCharLeft
-                    }
+                    { m | editor = deleteCharRight m.editor }
 
                 _ ->
                     m
@@ -526,6 +558,7 @@ view model =
             ]
         ]
         [ (renderCursor model)
+        , (renderSelection model)
         , (bufferPre model.editor)
         , pre [] [ text (statusBarText model) ]
         , pre [] [ text model.log ]
@@ -550,20 +583,45 @@ joinArray a b =
 
 
 renderCursor : Model -> Html Msg
-renderCursor model =
+renderCursor m =
     div
         [ style
             [ ( "width"
-              , cursorWidth model.editor.cursor model.mode
+              , cursorWidth m.editor.cursor m.mode
               )
-            , ( "left", asPx (model.editor.cursor.col * 9) )
+            , ( "left", asPx (m.editor.cursor.col * 9) )
             , ( "height", "15px" )
-            , ( "top", asPx (model.editor.cursor.row * 15) )
+            , ( "top", asPx (m.editor.cursor.row * 15) )
             , ( "position", "absolute" )
             , ( "background-color", "rgba(0,0,0,0.25)" )
             ]
         ]
         []
+
+
+renderSelection : Model -> Html Msg
+renderSelection m =
+    let
+        left =
+            m.editor.visualCursor.col * 9
+
+        width =
+            (m.editor.cursor.col - m.editor.visualCursor.col) * 9
+
+        top =
+            m.editor.visualCursor.row * 15
+    in
+        div
+            [ style
+                [ ( "width", asPx width )
+                , ( "height", "15px" )
+                , ( "left", asPx left )
+                , ( "top", asPx top )
+                , ( "position", "absolute" )
+                , ( "background-color", "rgba(0,0,255,0.25)" )
+                ]
+            ]
+            []
 
 
 cursorWidth : Cursor -> Mode -> String
