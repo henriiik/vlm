@@ -266,9 +266,7 @@ splitLine e =
         e
             |> replaceCurrentLine (fst split)
             |> insertLineAt (snd split) (e.cursor.row + 1)
-            -- |> cursorDown
-            |>
-                cursorStart
+            |> cursorStart
 
 
 insertLineBefore : Editor -> Editor
