@@ -1,10 +1,11 @@
 module Buffer
     exposing
         ( Buffer
+        , Line
+        , Selection
         , get
         , insert
         , remove
-        , replace
         , set
         , splitLeft
         , splitRight
@@ -13,8 +14,18 @@ module Buffer
 import Array
 
 
+type alias Selection =
+    { start : Int
+    , end : Int
+    }
+
+
+type alias Line =
+    ( String, Maybe Selection )
+
+
 type alias Buffer =
-    Array.Array String
+    Array.Array Line
 
 
 splitLeft : Int -> Buffer -> Buffer
@@ -29,7 +40,7 @@ splitRight i b =
 
 insert : Int -> String -> Buffer -> Buffer
 insert i s b =
-    Array.append (Array.push s (splitLeft i b)) (splitRight i b)
+    Array.append (Array.push ( s, Nothing ) (splitLeft i b)) (splitRight i b)
 
 
 remove : Int -> Buffer -> Buffer
@@ -37,18 +48,14 @@ remove i b =
     Array.append (splitLeft i b) (splitRight (i + 1) b)
 
 
-replace : Int -> String -> Buffer -> Buffer
-replace i s b =
-    Array.set i s b
-
-
 get : Int -> Buffer -> String
 get i b =
     b
         |> Array.get i
+        |> Maybe.map fst
         |> Maybe.withDefault ""
 
 
 set : Int -> String -> Buffer -> Buffer
 set i s b =
-    Array.set i s b
+    Array.set i ( s, Nothing ) b

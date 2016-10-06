@@ -6,7 +6,7 @@ import Cursor exposing (Cursor)
 import Buffer exposing (Buffer)
 import Html exposing (..)
 import Html.App
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (style, class)
 import Keyboard exposing (KeyCode)
 import Regex
 import String
@@ -321,8 +321,8 @@ init =
         (Editor
             (Cursor 0 0)
             (Cursor 0 0)
-            (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line" ])
-            40
+            (Array.fromList [ ( "this is the buffer", Nothing ), ( "this is the second line", Nothing ), ( "this is the third line", Nothing ) ])
+            80
             10
         )
         "this is the log"
@@ -559,22 +559,32 @@ view model =
         ]
         [ (renderCursor model)
         , (renderSelection model)
-        , (bufferPre model.editor)
+        , (renderBuffer model.editor)
         , pre [] [ text (statusBarText model) ]
         , pre [] [ text model.log ]
         ]
 
 
-bufferPre : Editor -> Html Msg
-bufferPre editor =
-    pre
-        [ style
-            [ ( "background", "white" )
-            , ( "width", (asPx (editor.width * 9)) )
-            , ( "height", (asPx (editor.height * 15)) )
+renderBuffer : Editor -> Html Msg
+renderBuffer e =
+    div
+        [ (class "buffer")
+        , style
+            [ ( "width", asPx (e.width * 9) )
+            , ( "height", asPx (e.height * 15) )
             ]
         ]
-        [ text (Array.foldr joinArray "" editor.buffer) ]
+        (Array.toList (Array.indexedMap lineMapper e.buffer))
+
+
+lineMapper : Int -> Buffer.Line -> Html Msg
+lineMapper i l =
+    div
+        [ (class "line")
+        , style [ ( "top", asPx (i * 15) ) ]
+        ]
+        [ text (fst l)
+        ]
 
 
 joinArray : String -> String -> String
@@ -585,53 +595,47 @@ joinArray a b =
 renderCursor : Model -> Html Msg
 renderCursor m =
     div
-        [ style
-            [ ( "width"
-              , cursorWidth m.editor.cursor m.mode
-              )
+        [ (class "cursor")
+        , style
+            [ ( "width", cursorWidth m )
             , ( "left", asPx (m.editor.cursor.col * 9) )
-            , ( "height", "15px" )
             , ( "top", asPx (m.editor.cursor.row * 15) )
-            , ( "position", "absolute" )
-            , ( "background-color", "rgba(0,0,0,0.25)" )
             ]
         ]
         []
 
 
-renderSelection : Model -> Html Msg
-renderSelection m =
-    let
-        left =
-            m.editor.visualCursor.col * 9
-
-        width =
-            (m.editor.cursor.col - m.editor.visualCursor.col) * 9
-
-        top =
-            m.editor.visualCursor.row * 15
-    in
-        div
-            [ style
-                [ ( "width", asPx width )
-                , ( "height", "15px" )
-                , ( "left", asPx left )
-                , ( "top", asPx top )
-                , ( "position", "absolute" )
-                , ( "background-color", "rgba(0,0,255,0.25)" )
-                ]
-            ]
-            []
-
-
-cursorWidth : Cursor -> Mode -> String
-cursorWidth cursor mode =
-    case mode of
+cursorWidth : Model -> String
+cursorWidth m =
+    case m.mode of
         Insert ->
             "2px"
 
         _ ->
             "9px"
+
+
+renderSelection : Model -> Html Msg
+renderSelection m =
+    case m.mode of
+        Visual ->
+            div
+                [ (class "selection")
+                , style
+                    [ ( "width", selectionWidth m )
+                    , ( "left", asPx (m.editor.visualCursor.col * 9) )
+                    , ( "top", asPx (m.editor.visualCursor.row * 15) )
+                    ]
+                ]
+                []
+
+        _ ->
+            div [] []
+
+
+selectionWidth : Model -> String
+selectionWidth m =
+    asPx ((m.editor.cursor.col - m.editor.visualCursor.col) * 9)
 
 
 statusBarText : Model -> String
