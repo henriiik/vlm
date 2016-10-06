@@ -7,6 +7,7 @@ module Buffer
         , insert
         , remove
         , set
+        , select
         , splitLeft
         , splitRight
         )
@@ -59,3 +60,13 @@ get i b =
 set : Int -> String -> Buffer -> Buffer
 set i s b =
     Array.set i ( s, Nothing ) b
+
+
+select : Int -> Selection -> Buffer -> Buffer
+select i s b =
+    case Array.get i b of
+        Just omg ->
+            Array.set i ( fst omg, Just s ) b
+
+        _ ->
+            b

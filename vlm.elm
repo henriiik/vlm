@@ -35,7 +35,6 @@ type Mode
 
 type alias Editor =
     { cursor : Cursor
-    , visualCursor : Cursor
     , buffer : Buffer
     , width : Int
     , height : Int
@@ -290,14 +289,14 @@ insertLineAfter e =
     insertEmptyLineAt (e.cursor.row + 1) e
 
 
-setVisualCursor : Cursor -> Editor -> Editor
-setVisualCursor c e =
-    { e | visualCursor = c }
+startSelection : Editor -> Editor
+startSelection e =
+    { e | buffer = (Buffer.select e.cursor.row (Buffer.Selection e.cursor.col (e.cursor.col + 1)) e.buffer) }
 
 
 startVisualMode : Model -> Model
 startVisualMode m =
-    { m | mode = Visual, editor = setVisualCursor m.editor.cursor m.editor }
+    { m | mode = Visual, editor = startSelection m.editor }
 
 
 startInsertMode : Model -> Model
@@ -319,7 +318,6 @@ init : ( Model, Cmd Msg )
 init =
     ( Model
         (Editor
-            (Cursor 0 0)
             (Cursor 0 0)
             (Array.fromList [ ( "this is the buffer", Nothing ), ( "this is the second line", Nothing ), ( "this is the third line", Nothing ) ])
             80
@@ -558,7 +556,6 @@ view model =
             ]
         ]
         [ (renderCursor model)
-        , (renderSelection model)
         , (renderBuffer model.editor)
         , pre [] [ text (statusBarText model) ]
         , pre [] [ text model.log ]
@@ -584,7 +581,25 @@ lineMapper i l =
         , style [ ( "top", asPx (i * 15) ) ]
         ]
         [ text (fst l)
+        , (renderSelection l)
         ]
+
+
+renderSelection : Buffer.Line -> Html Msg
+renderSelection l =
+    case snd l of
+        Just s ->
+            div
+                [ class "selection"
+                , style
+                    [ ( "left", asPx (s.start * 9) )
+                    , ( "width", asPx ((s.end - s.start) * 9) )
+                    ]
+                ]
+                []
+
+        _ ->
+            div [] []
 
 
 joinArray : String -> String -> String
@@ -613,29 +628,6 @@ cursorWidth m =
 
         _ ->
             "9px"
-
-
-renderSelection : Model -> Html Msg
-renderSelection m =
-    case m.mode of
-        Visual ->
-            div
-                [ (class "selection")
-                , style
-                    [ ( "width", selectionWidth m )
-                    , ( "left", asPx (m.editor.visualCursor.col * 9) )
-                    , ( "top", asPx (m.editor.visualCursor.row * 15) )
-                    ]
-                ]
-                []
-
-        _ ->
-            div [] []
-
-
-selectionWidth : Model -> String
-selectionWidth m =
-    asPx ((m.editor.cursor.col - m.editor.visualCursor.col) * 9)
 
 
 statusBarText : Model -> String
