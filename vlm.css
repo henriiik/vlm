@@ -1,10 +1,12 @@
 
 body {
     background: lightgrey;
+    font-family: "Source Code Pro", monospace
 }
 
 pre {
     font-size: 15px;
     line-height: 15px;
     margin: 0px;
+    font-family: "Source Code Pro", monospace
 }
