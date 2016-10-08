@@ -33,16 +33,11 @@ type Mode
     | VisualLine
 
 
-type alias Editor =
+type alias Model =
     { cursor : Cursor
     , buffer : Buffer
     , width : Int
     , height : Int
-    }
-
-
-type alias Model =
-    { editor : Editor
     , log : String
     , mode : Mode
     , ctrl : Bool
@@ -51,75 +46,75 @@ type alias Model =
     }
 
 
-cursorLeft : Editor -> Editor
-cursorLeft editor =
+cursorLeft : Model -> Model
+cursorLeft m =
     let
         col =
-            (max (editor.cursor.col - 1) 0)
+            (max (m.cursor.col - 1) 0)
     in
-        { editor | cursor = (Cursor.withCol col editor.cursor) }
+        { m | cursor = (Cursor.withCol col m.cursor) }
 
 
-cursorRight : Editor -> Editor
-cursorRight editor =
+cursorRight : Model -> Model
+cursorRight m =
     let
         col =
-            (min (editor.cursor.col + 1) (String.length (currentLine editor)))
+            (min (m.cursor.col + 1) (String.length (currentLine m)))
     in
-        { editor | cursor = (Cursor.withCol col editor.cursor) }
+        { m | cursor = (Cursor.withCol col m.cursor) }
 
 
-cursorDown : Editor -> Editor
-cursorDown editor =
+cursorDown : Model -> Model
+cursorDown m =
     let
         row =
-            (min (editor.cursor.row + 1) (editor.height - 1))
+            (min (m.cursor.row + 1) (m.height - 1))
     in
-        { editor | cursor = (Cursor.withRow row editor.cursor) }
+        { m | cursor = (Cursor.withRow row m.cursor) }
 
 
-cursorUp : Editor -> Editor
-cursorUp editor =
+cursorUp : Model -> Model
+cursorUp m =
     let
         row =
-            (max (editor.cursor.row - 1) 0)
+            (max (m.cursor.row - 1) 0)
     in
-        { editor | cursor = (Cursor.withRow row editor.cursor) }
+        { m | cursor = (Cursor.withRow row m.cursor) }
 
 
-cursorStart : Editor -> Editor
-cursorStart e =
-    { e | cursor = (Cursor.withCol 0 e.cursor) }
+cursorStart : Model -> Model
+cursorStart m =
+    { m | cursor = (Cursor.withCol 0 m.cursor) }
 
 
-cursorEnd : Editor -> Editor
-cursorEnd e =
-    { e | cursor = (Cursor.withCol (String.length (currentLine e)) e.cursor) }
+cursorEnd : Model -> Model
+cursorEnd m =
+    { m | cursor = (Cursor.withCol (String.length (currentLine m)) m.cursor) }
 
 
-replaceLineAt : Int -> String -> Editor -> Editor
-replaceLineAt i s e =
-    { e | buffer = (Buffer.set i s e.buffer) }
+replaceLineAt : Int -> String -> Model -> Model
+replaceLineAt i s m =
+    { m | buffer = (Buffer.set i s m.buffer) }
 
 
-replaceCurrentLine : String -> Editor -> Editor
-replaceCurrentLine s e =
-    replaceLineAt e.cursor.row s e
+replaceCurrentLine : String -> Model -> Model
+replaceCurrentLine s m =
+    replaceLineAt m.cursor.row s m
 
 
-currentLine : Editor -> String
-currentLine e =
-    Buffer.get e.cursor.row e.buffer
+currentLine : Model -> String
+currentLine m =
+    Buffer.get m.cursor.row m.buffer
 
 
-prevLine : Editor -> String
-prevLine e =
-    Buffer.get (e.cursor.row - 1) e.buffer
+prevLine : Model -> String
+prevLine m =
+    Buffer.get (m.cursor.row - 1) m.buffer
 
 
-nextLine : Editor -> String
-nextLine e =
-    Buffer.get (e.cursor.row + 1) e.buffer
+nextLine : Model -> String
+nextLine m =
+    Buffer.get (m.cursor.row + 1) m.buffer
 
 
 wordIndexes : String -> List Regex.Match
@@ -157,44 +152,44 @@ lastIndex list =
         |> List.head
 
 
-motionWord : Editor -> Editor
-motionWord e =
-    case nextIndex e.cursor.col (wordIndexes (currentLine e)) of
+motionWord : Model -> Model
+motionWord m =
+    case nextIndex m.cursor.col (wordIndexes (currentLine m)) of
         Just col ->
-            { e | cursor = Cursor.withCol col e.cursor }
+            { m | cursor = Cursor.withCol col m.cursor }
 
         Nothing ->
-            cursorStart (cursorDown e)
+            cursorStart (cursorDown m)
 
 
-motionWordBack : Editor -> Editor
-motionWordBack e =
-    case prevIndex e.cursor.col (wordIndexes (currentLine e)) of
+motionWordBack : Model -> Model
+motionWordBack m =
+    case prevIndex m.cursor.col (wordIndexes (currentLine m)) of
         Just col ->
-            { e | cursor = Cursor.withCol col e.cursor }
+            { m | cursor = Cursor.withCol col m.cursor }
 
         Nothing ->
-            case lastIndex (wordIndexes (prevLine e)) of
+            case lastIndex (wordIndexes (prevLine m)) of
                 Just col ->
-                    cursorUp { e | cursor = Cursor.withCol col e.cursor }
+                    cursorUp { m | cursor = Cursor.withCol col m.cursor }
 
                 Nothing ->
-                    cursorUp e
+                    cursorUp m
 
 
-motionWordEnd : Editor -> Editor
-motionWordEnd e =
-    case nextIndex e.cursor.col (wordEndIndexes (currentLine e)) of
+motionWordEnd : Model -> Model
+motionWordEnd m =
+    case nextIndex m.cursor.col (wordEndIndexes (currentLine m)) of
         Just col ->
-            { e | cursor = Cursor.withCol col e.cursor }
+            { m | cursor = Cursor.withCol col m.cursor }
 
         Nothing ->
-            case nextIndex 0 (wordEndIndexes (nextLine e)) of
+            case nextIndex 0 (wordEndIndexes (nextLine m)) of
                 Just col ->
-                    cursorDown { e | cursor = Cursor.withCol col e.cursor }
+                    cursorDown { m | cursor = Cursor.withCol col m.cursor }
 
                 Nothing ->
-                    cursorDown e
+                    cursorDown m
 
 
 splitAt : Int -> String -> ( String, String )
@@ -211,17 +206,17 @@ deleteAt i a =
         (String.dropRight 1 (fst split)) ++ snd split
 
 
-deleteCharLeft : Editor -> Editor
-deleteCharLeft e =
-    if e.cursor.col == 0 && e.cursor.row /= 0 then
-        joinLines e
+deleteCharLeft : Model -> Model
+deleteCharLeft m =
+    if m.cursor.col == 0 && m.cursor.row /= 0 then
+        joinLines m
     else
-        replaceCurrentLine (deleteAt e.cursor.col (currentLine e)) e
+        replaceCurrentLine (deleteAt m.cursor.col (currentLine m)) m
 
 
-deleteCharRight : Editor -> Editor
-deleteCharRight e =
-    replaceCurrentLine (deleteAt (e.cursor.col + 1) (currentLine e)) e
+deleteCharRight : Model -> Model
+deleteCharRight m =
+    replaceCurrentLine (deleteAt (m.cursor.col + 1) (currentLine m)) m
 
 
 insertAt : Int -> String -> String -> String
@@ -233,70 +228,70 @@ insertAt i a b =
         fst split ++ a ++ snd split
 
 
-insertChar : KeyCode -> Editor -> Editor
-insertChar c e =
-    e
-        |> replaceCurrentLine (insertAt e.cursor.col (fromCode c) (currentLine e))
+insertChar : KeyCode -> Model -> Model
+insertChar c m =
+    m
+        |> replaceCurrentLine (insertAt m.cursor.col (fromCode c) (currentLine m))
         |> cursorRight
 
 
-insertLineAt : String -> Int -> Editor -> Editor
-insertLineAt s i e =
-    { e | buffer = Buffer.insert i s e.buffer, cursor = Cursor i 0 }
+insertLineAt : String -> Int -> Model -> Model
+insertLineAt s i m =
+    { m | buffer = Buffer.insert i s m.buffer, cursor = Cursor i 0 }
 
 
-removeLineAt : Int -> Editor -> Editor
-removeLineAt i e =
-    { e | buffer = Buffer.remove i e.buffer }
+removeLineAt : Int -> Model -> Model
+removeLineAt i m =
+    { m | buffer = Buffer.remove i m.buffer }
 
 
-insertEmptyLineAt : Int -> Editor -> Editor
-insertEmptyLineAt i e =
-    insertLineAt "" i e
+insertEmptyLineAt : Int -> Model -> Model
+insertEmptyLineAt i m =
+    insertLineAt "" i m
 
 
-joinLines : Editor -> Editor
-joinLines e =
+joinLines : Model -> Model
+joinLines m =
     let
         line =
-            (prevLine e) ++ (currentLine e)
+            (prevLine m) ++ (currentLine m)
     in
-        e
+        m
             |> cursorUp
             |> cursorEnd
             |> replaceCurrentLine line
 
 
-splitLine : Editor -> Editor
-splitLine e =
+splitLine : Model -> Model
+splitLine m =
     let
         split =
-            splitAt e.cursor.col (currentLine e)
+            splitAt m.cursor.col (currentLine m)
     in
-        e
+        m
             |> replaceCurrentLine (fst split)
-            |> insertLineAt (snd split) (e.cursor.row + 1)
+            |> insertLineAt (snd split) (m.cursor.row + 1)
             |> cursorStart
 
 
-insertLineBefore : Editor -> Editor
-insertLineBefore e =
-    insertEmptyLineAt e.cursor.row e
+insertLineBefore : Model -> Model
+insertLineBefore m =
+    insertEmptyLineAt m.cursor.row m
 
 
-insertLineAfter : Editor -> Editor
-insertLineAfter e =
-    insertEmptyLineAt (e.cursor.row + 1) e
+insertLineAfter : Model -> Model
+insertLineAfter m =
+    insertEmptyLineAt (m.cursor.row + 1) m
 
 
-startSelection : Editor -> Editor
-startSelection e =
-    { e | buffer = (Buffer.select e.cursor.row (Buffer.Selection e.cursor.col (e.cursor.col + 1)) e.buffer) }
+startSelection : Model -> Model
+startSelection m =
+    { m | buffer = (Buffer.select m.cursor.row (Buffer.Selection m.cursor.col (m.cursor.col + 1)) m.buffer) }
 
 
 startVisualMode : Model -> Model
 startVisualMode m =
-    { m | mode = Visual, editor = startSelection m.editor }
+    startSelection { m | mode = Visual }
 
 
 startInsertMode : Model -> Model
@@ -306,23 +301,21 @@ startInsertMode m =
 
 motionLeft : Model -> Model
 motionLeft m =
-    { m | editor = cursorLeft m.editor }
+    cursorLeft m
 
 
 motionRight : Model -> Model
 motionRight m =
-    { m | editor = cursorRight m.editor }
+    cursorRight m
 
 
 init : ( Model, Cmd Msg )
 init =
     ( Model
-        (Editor
-            (Cursor 0 0)
-            (Array.fromList [ ( "this is the buffer", Nothing ), ( "this is the second line", Nothing ), ( "this is the third line", Nothing ) ])
-            80
-            10
-        )
+        (Cursor 0 0)
+        (Array.fromList [ ( "this is the buffer", Nothing ), ( "this is the second line", Nothing ), ( "this is the third line", Nothing ) ])
+        80
+        10
         "this is the log"
         Normal
         False
@@ -401,13 +394,13 @@ onKeyDown c m =
             motionLeft m
 
         38 ->
-            { m | editor = cursorUp m.editor }
+            cursorUp m
 
         39 ->
             motionRight m
 
         40 ->
-            { m | editor = cursorDown m.editor }
+            cursorDown m
 
         _ ->
             case m.mode of
@@ -419,11 +412,11 @@ onKeyDown c m =
 
                         -- backspace
                         8 ->
-                            motionLeft { m | editor = deleteCharLeft m.editor }
+                            motionLeft (deleteCharLeft m)
 
                         -- delete
                         46 ->
-                            { m | editor = deleteCharRight m.editor }
+                            deleteCharRight m
 
                         _ ->
                             m
@@ -448,24 +441,24 @@ onKeyPress c m =
             case c of
                 -- enter
                 13 ->
-                    { m | editor = splitLine m.editor }
+                    splitLine m
 
                 _ ->
-                    { m | editor = insertChar c m.editor }
+                    insertChar c m
 
         _ ->
             case c of
                 -- A
                 65 ->
-                    { m | mode = Insert, editor = cursorEnd m.editor }
+                    cursorEnd { m | mode = Insert }
 
                 -- I
                 73 ->
-                    { m | mode = Insert, editor = cursorStart m.editor }
+                    cursorStart { m | mode = Insert }
 
                 -- O
                 79 ->
-                    { m | editor = insertLineBefore m.editor, mode = Insert }
+                    insertLineBefore { m | mode = Insert }
 
                 -- a
                 97 ->
@@ -473,11 +466,11 @@ onKeyPress c m =
 
                 -- b
                 98 ->
-                    { m | editor = motionWordBack m.editor }
+                    motionWordBack m
 
                 -- e
                 101 ->
-                    { m | editor = motionWordEnd m.editor }
+                    motionWordEnd m
 
                 -- h
                 104 ->
@@ -489,11 +482,11 @@ onKeyPress c m =
 
                 -- j
                 106 ->
-                    { m | editor = cursorDown m.editor }
+                    cursorDown m
 
                 -- k
                 107 ->
-                    { m | editor = cursorUp m.editor }
+                    cursorUp m
 
                 -- l
                 108 ->
@@ -501,7 +494,7 @@ onKeyPress c m =
 
                 -- o
                 111 ->
-                    { m | editor = insertLineAfter m.editor, mode = Insert }
+                    insertLineAfter { m | mode = Insert }
 
                 -- v
                 118 ->
@@ -509,11 +502,11 @@ onKeyPress c m =
 
                 -- w
                 119 ->
-                    { m | editor = motionWord m.editor }
+                    motionWord m
 
                 -- x
                 120 ->
-                    { m | editor = deleteCharRight m.editor }
+                    deleteCharRight m
 
                 _ ->
                     m
@@ -547,7 +540,7 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view model =
+view m =
     div
         [ style
             [ ( "position", "absolute" )
@@ -555,23 +548,23 @@ view model =
             , ( "top", "20px" )
             ]
         ]
-        [ (renderCursor model)
-        , (renderBuffer model.editor)
-        , pre [] [ text (statusBarText model) ]
-        , pre [] [ text model.log ]
+        [ (renderCursor m)
+        , (renderBuffer m)
+        , pre [] [ text (statusBarText m) ]
+        , pre [] [ text m.log ]
         ]
 
 
-renderBuffer : Editor -> Html Msg
-renderBuffer e =
+renderBuffer : Model -> Html Msg
+renderBuffer m =
     div
         [ (class "buffer")
         , style
-            [ ( "width", asPx (e.width * 9) )
-            , ( "height", asPx (e.height * 15) )
+            [ ( "width", asPx (m.width * 9) )
+            , ( "height", asPx (m.height * 15) )
             ]
         ]
-        (Array.toList (Array.indexedMap lineMapper e.buffer))
+        (Array.toList (Array.indexedMap lineMapper m.buffer))
 
 
 lineMapper : Int -> Buffer.Line -> Html Msg
@@ -613,8 +606,8 @@ renderCursor m =
         [ (class "cursor")
         , style
             [ ( "width", cursorWidth m )
-            , ( "left", asPx (m.editor.cursor.col * 9) )
-            , ( "top", asPx (m.editor.cursor.row * 15) )
+            , ( "left", asPx (m.cursor.col * 9) )
+            , ( "top", asPx (m.cursor.row * 15) )
             ]
         ]
         []
@@ -631,8 +624,8 @@ cursorWidth m =
 
 
 statusBarText : Model -> String
-statusBarText model =
-    "--" ++ (toString model.mode) ++ "-- , shift:" ++ (toString model.shift) ++ ", ctrl:" ++ (toString model.ctrl) ++ ", alt:" ++ (toString model.alt) ++ ", row:" ++ (toString model.editor.cursor.row) ++ ", col:" ++ (toString model.editor.cursor.col)
+statusBarText m =
+    "--" ++ (toString m.mode) ++ "-- , shift:" ++ (toString m.shift) ++ ", ctrl:" ++ (toString m.ctrl) ++ ", alt:" ++ (toString m.alt) ++ ", row:" ++ (toString m.cursor.row) ++ ", col:" ++ (toString m.cursor.col)
 
 
 asPx : Int -> String
