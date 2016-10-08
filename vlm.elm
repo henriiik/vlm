@@ -33,8 +33,15 @@ type Mode
     | VisualLine
 
 
+type alias Selection =
+    { start : Cursor
+    , end : Cursor
+    }
+
+
 type alias Model =
     { cursor : Cursor
+    , selectionStart : Cursor
     , buffer : Buffer
     , width : Int
     , height : Int
@@ -90,6 +97,50 @@ cursorStart m =
 cursorEnd : Model -> Model
 cursorEnd m =
     { m | cursor = (Cursor.withCol (String.length (currentLine m)) m.cursor) }
+
+
+compareCursor : Cursor -> Cursor -> Order
+compareCursor a b =
+    if a.row > b.row then
+        GT
+    else if a.row < b.row then
+        LT
+    else
+        compare a.col b.col
+
+
+currentSelection : Model -> Selection
+currentSelection m =
+    case compareCursor m.cursor m.selectionStart of
+        LT ->
+            Selection m.cursor m.selectionStart
+
+        _ ->
+            Selection m.selectionStart (Cursor m.cursor.row (m.cursor.col + 1))
+
+
+minCursor : Cursor -> Cursor -> Cursor
+minCursor a b =
+    if a.row < b.row then
+        a
+    else if b.row < a.row then
+        b
+    else if a.col < b.col then
+        a
+    else
+        b
+
+
+maxCursor : Cursor -> Cursor -> Cursor
+maxCursor a b =
+    if a.row > b.row then
+        a
+    else if b.row > a.row then
+        b
+    else if a.col > b.col then
+        a
+    else
+        b
 
 
 replaceLineAt : Int -> String -> Model -> Model
@@ -286,7 +337,7 @@ insertLineAfter m =
 
 startSelection : Model -> Model
 startSelection m =
-    { m | buffer = (Buffer.select m.cursor.row (Buffer.Selection m.cursor.col (m.cursor.col + 1)) m.buffer) }
+    { m | selectionStart = m.cursor }
 
 
 startVisualMode : Model -> Model
@@ -312,6 +363,7 @@ motionRight m =
 init : ( Model, Cmd Msg )
 init =
     ( Model
+        (Cursor 0 0)
         (Cursor 0 0)
         (Array.fromList [ ( "this is the buffer", Nothing ), ( "this is the second line", Nothing ), ( "this is the third line", Nothing ) ])
         80
@@ -557,42 +609,72 @@ view m =
 
 renderBuffer : Model -> Html Msg
 renderBuffer m =
-    div
-        [ (class "buffer")
-        , style
-            [ ( "width", asPx (m.width * 9) )
-            , ( "height", asPx (m.height * 15) )
+    let
+        s =
+            currentSelection m
+    in
+        div
+            [ (class "buffer")
+            , style
+                [ ( "width", asPx (m.width * 9) )
+                , ( "height", asPx (m.height * 15) )
+                ]
             ]
-        ]
-        (Array.toList (Array.indexedMap lineMapper m.buffer))
+            (Array.toList (Array.indexedMap (lineMapper m.mode s) m.buffer))
 
 
-lineMapper : Int -> Buffer.Line -> Html Msg
-lineMapper i l =
+lineMapper : Mode -> Selection -> Int -> Buffer.Line -> Html Msg
+lineMapper m s row l =
+    if m == Visual && s.start.row <= row && s.end.row >= row then
+        renderLine row l (renderSelection s row l)
+    else
+        renderLine row l (text "")
+
+
+renderLine : Int -> Buffer.Line -> Html Msg -> Html Msg
+renderLine row l h =
     div
         [ (class "line")
-        , style [ ( "top", asPx (i * 15) ) ]
+        , style [ ( "top", asPx (row * 15) ) ]
         ]
         [ text (fst l)
-        , (renderSelection l)
+        , h
         ]
 
 
-renderSelection : Buffer.Line -> Html Msg
-renderSelection l =
-    case snd l of
-        Just s ->
-            div
-                [ class "selection"
-                , style
-                    [ ( "left", asPx (s.start * 9) )
-                    , ( "width", asPx ((s.end - s.start) * 9) )
-                    ]
-                ]
-                []
+renderSelectionStart : Cursor -> Int -> Int
+renderSelectionStart c row =
+    if c.row < row then
+        0
+    else
+        c.col
 
-        _ ->
-            div [] []
+
+renderSelectionEnd : Cursor -> Int -> Buffer.Line -> Int
+renderSelectionEnd c row l =
+    if c.row > row then
+        String.length (fst l)
+    else
+        c.col
+
+
+renderSelection : Selection -> Int -> Buffer.Line -> Html Msg
+renderSelection s row l =
+    let
+        start =
+            renderSelectionStart s.start row
+
+        width =
+            (renderSelectionEnd s.end row l) - start
+    in
+        div
+            [ class "selection"
+            , style
+                [ ( "left", asPx (start * 9) )
+                , ( "width", asPx (width * 9) )
+                ]
+            ]
+            []
 
 
 joinArray : String -> String -> String
@@ -625,7 +707,21 @@ cursorWidth m =
 
 statusBarText : Model -> String
 statusBarText m =
-    "--" ++ (toString m.mode) ++ "-- , shift:" ++ (toString m.shift) ++ ", ctrl:" ++ (toString m.ctrl) ++ ", alt:" ++ (toString m.alt) ++ ", row:" ++ (toString m.cursor.row) ++ ", col:" ++ (toString m.cursor.col)
+    "--"
+        ++ (toString m.mode)
+        ++ "-- , shift:"
+        ++ (toString m.shift)
+        ++ ", ctrl:"
+        ++ (toString m.ctrl)
+        ++ ", alt:"
+        ++ (toString m.alt)
+        ++ (cursorStatus ", cursor " m.cursor)
+        ++ (cursorStatus ", selection " m.selectionStart)
+
+
+cursorStatus : String -> Cursor -> String
+cursorStatus s c =
+    s ++ (toString c.row) ++ ":" ++ (toString c.col)
 
 
 asPx : Int -> String
