@@ -1,28 +1,25 @@
 module Buffer
     exposing
         ( Buffer
-        , Line
         , Selection
+        , cut
         , get
         , insert
         , remove
         , set
-        , select
         , splitLeft
         , splitRight
         )
 
 import Array
+import Cursor exposing (Cursor)
+import Line exposing (Line)
 
 
 type alias Selection =
-    { start : Int
-    , end : Int
+    { start : Cursor
+    , end : Cursor
     }
-
-
-type alias Line =
-    ( String, Maybe Selection )
 
 
 type alias Buffer =
@@ -41,7 +38,7 @@ splitRight i b =
 
 insert : Int -> String -> Buffer -> Buffer
 insert i s b =
-    Array.append (Array.push ( s, Nothing ) (splitLeft i b)) (splitRight i b)
+    Array.append (Array.push s (splitLeft i b)) (splitRight i b)
 
 
 remove : Int -> Buffer -> Buffer
@@ -53,20 +50,28 @@ get : Int -> Buffer -> String
 get i b =
     b
         |> Array.get i
-        |> Maybe.map fst
         |> Maybe.withDefault ""
 
 
 set : Int -> String -> Buffer -> Buffer
 set i s b =
-    Array.set i ( s, Nothing ) b
+    Array.set i s b
 
 
-select : Int -> Selection -> Buffer -> Buffer
-select i s b =
-    case Array.get i b of
-        Just omg ->
-            Array.set i ( fst omg, Just s ) b
+cut : Selection -> Buffer -> ( Buffer, Buffer )
+cut s b =
+    if s.start.row == s.end.row then
+        let
+            l =
+                get s.start.row b
 
-        _ ->
-            b
+            omg =
+                Line.split s.end.col l
+
+            wat =
+                Line.split s.start.col (fst omg)
+        in
+            ( set s.start.row (fst wat ++ snd omg) b, (Array.repeat 1 (snd wat)) )
+    else
+        ( b, b )
+

@@ -1,4 +1,4 @@
-module Cursor exposing (Cursor, withCol, withRow)
+module Cursor exposing (Cursor, withCol, withRow, cmp)
 
 
 type alias Cursor =
@@ -15,3 +15,13 @@ withCol i c =
 withRow : Int -> Cursor -> Cursor
 withRow i c =
     { c | row = i }
+
+
+cmp : Cursor -> Cursor -> Order
+cmp a b =
+    if a.row > b.row then
+        GT
+    else if a.row < b.row then
+        LT
+    else
+        compare a.col b.col

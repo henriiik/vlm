@@ -3,7 +3,8 @@ module Main exposing (..)
 import Array
 import Char
 import Cursor exposing (Cursor)
-import Buffer exposing (Buffer)
+import Buffer exposing (Buffer, Selection)
+import Line exposing (Line)
 import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (style, class)
@@ -33,16 +34,11 @@ type Mode
     | VisualLine
 
 
-type alias Selection =
-    { start : Cursor
-    , end : Cursor
-    }
-
-
 type alias Model =
     { cursor : Cursor
     , selectionStart : Cursor
     , buffer : Buffer
+    , registry : Buffer
     , width : Int
     , height : Int
     , log : String
@@ -99,19 +95,9 @@ cursorEnd m =
     { m | cursor = (Cursor.withCol (String.length (currentLine m)) m.cursor) }
 
 
-compareCursor : Cursor -> Cursor -> Order
-compareCursor a b =
-    if a.row > b.row then
-        GT
-    else if a.row < b.row then
-        LT
-    else
-        compare a.col b.col
-
-
 currentSelection : Model -> Selection
 currentSelection m =
-    case compareCursor m.cursor m.selectionStart of
+    case Cursor.cmp m.cursor m.selectionStart of
         LT ->
             Selection m.cursor m.selectionStart
 
@@ -119,61 +105,37 @@ currentSelection m =
             Selection m.selectionStart (Cursor m.cursor.row (m.cursor.col + 1))
 
 
-minCursor : Cursor -> Cursor -> Cursor
-minCursor a b =
-    if a.row < b.row then
-        a
-    else if b.row < a.row then
-        b
-    else if a.col < b.col then
-        a
-    else
-        b
-
-
-maxCursor : Cursor -> Cursor -> Cursor
-maxCursor a b =
-    if a.row > b.row then
-        a
-    else if b.row > a.row then
-        b
-    else if a.col > b.col then
-        a
-    else
-        b
-
-
-replaceLineAt : Int -> String -> Model -> Model
+replaceLineAt : Int -> Line -> Model -> Model
 replaceLineAt i s m =
     { m | buffer = (Buffer.set i s m.buffer) }
 
 
-replaceCurrentLine : String -> Model -> Model
+replaceCurrentLine : Line -> Model -> Model
 replaceCurrentLine s m =
     replaceLineAt m.cursor.row s m
 
 
-currentLine : Model -> String
+currentLine : Model -> Line
 currentLine m =
     Buffer.get m.cursor.row m.buffer
 
 
-prevLine : Model -> String
+prevLine : Model -> Line
 prevLine m =
     Buffer.get (m.cursor.row - 1) m.buffer
 
 
-nextLine : Model -> String
+nextLine : Model -> Line
 nextLine m =
     Buffer.get (m.cursor.row + 1) m.buffer
 
 
-wordIndexes : String -> List Regex.Match
+wordIndexes : Line -> List Regex.Match
 wordIndexes a =
     Regex.find Regex.All (Regex.regex "\\b\\w") a
 
 
-wordEndIndexes : String -> List Regex.Match
+wordEndIndexes : Line -> List Regex.Match
 wordEndIndexes a =
     Regex.find Regex.All (Regex.regex "\\w\\b") a
 
@@ -243,46 +205,23 @@ motionWordEnd m =
                     cursorDown m
 
 
-splitAt : Int -> String -> ( String, String )
-splitAt i a =
-    ( String.left i a, String.right ((String.length a) - i) a )
-
-
-deleteAt : Int -> String -> String
-deleteAt i a =
-    let
-        split =
-            splitAt i a
-    in
-        (String.dropRight 1 (fst split)) ++ snd split
-
-
 deleteCharLeft : Model -> Model
 deleteCharLeft m =
     if m.cursor.col == 0 && m.cursor.row /= 0 then
         joinLines m
     else
-        replaceCurrentLine (deleteAt m.cursor.col (currentLine m)) m
+        replaceCurrentLine (Line.deleteChar m.cursor.col (currentLine m)) m
 
 
 deleteCharRight : Model -> Model
 deleteCharRight m =
-    replaceCurrentLine (deleteAt (m.cursor.col + 1) (currentLine m)) m
-
-
-insertAt : Int -> String -> String -> String
-insertAt i a b =
-    let
-        split =
-            splitAt i b
-    in
-        fst split ++ a ++ snd split
+    replaceCurrentLine (Line.deleteChar (m.cursor.col + 1) (currentLine m)) m
 
 
 insertChar : KeyCode -> Model -> Model
 insertChar c m =
     m
-        |> replaceCurrentLine (insertAt m.cursor.col (fromCode c) (currentLine m))
+        |> replaceCurrentLine (Line.insert m.cursor.col (fromCode c) (currentLine m))
         |> cursorRight
 
 
@@ -317,7 +256,7 @@ splitLine : Model -> Model
 splitLine m =
     let
         split =
-            splitAt m.cursor.col (currentLine m)
+            Line.split m.cursor.col (currentLine m)
     in
         m
             |> replaceCurrentLine (fst split)
@@ -338,6 +277,23 @@ insertLineAfter m =
 startSelection : Model -> Model
 startSelection m =
     { m | selectionStart = m.cursor }
+
+
+deleteSelection : Model -> Model
+deleteSelection m =
+    let
+        s =
+            currentSelection m
+
+        cut =
+            Buffer.cut s m.buffer
+    in
+        { m
+            | mode = Normal
+            , cursor = s.start
+            , buffer = (fst cut)
+            , registry = (snd cut)
+        }
 
 
 startVisualMode : Model -> Model
@@ -365,7 +321,8 @@ init =
     ( Model
         (Cursor 0 0)
         (Cursor 0 0)
-        (Array.fromList [ ( "this is the buffer", Nothing ), ( "this is the second line", Nothing ), ( "this is the third line", Nothing ) ])
+        (Array.fromList [ "" ])
+        (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line" ])
         80
         10
         "this is the log"
@@ -520,6 +477,10 @@ onKeyPress c m =
                 98 ->
                     motionWordBack m
 
+                -- d
+                100 ->
+                    deleteSelection m
+
                 -- e
                 101 ->
                     motionWordEnd m
@@ -623,7 +584,7 @@ renderBuffer m =
             (Array.toList (Array.indexedMap (lineMapper m.mode s) m.buffer))
 
 
-lineMapper : Mode -> Selection -> Int -> Buffer.Line -> Html Msg
+lineMapper : Mode -> Selection -> Int -> Line -> Html Msg
 lineMapper m s row l =
     if m == Visual && s.start.row <= row && s.end.row >= row then
         renderLine row l (renderSelection s row l)
@@ -631,13 +592,13 @@ lineMapper m s row l =
         renderLine row l (text "")
 
 
-renderLine : Int -> Buffer.Line -> Html Msg -> Html Msg
+renderLine : Int -> Line -> Html Msg -> Html Msg
 renderLine row l h =
     div
         [ (class "line")
         , style [ ( "top", asPx (row * 15) ) ]
         ]
-        [ text (fst l)
+        [ text l
         , h
         ]
 
@@ -650,15 +611,15 @@ renderSelectionStart c row =
         c.col
 
 
-renderSelectionEnd : Cursor -> Int -> Buffer.Line -> Int
+renderSelectionEnd : Cursor -> Int -> Line -> Int
 renderSelectionEnd c row l =
     if c.row > row then
-        String.length (fst l)
+        String.length l
     else
         c.col
 
 
-renderSelection : Selection -> Int -> Buffer.Line -> Html Msg
+renderSelection : Selection -> Int -> Line -> Html Msg
 renderSelection s row l =
     let
         start =
