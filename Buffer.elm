@@ -59,19 +59,18 @@ set i s b =
 
 
 cut : Selection -> Buffer -> ( Buffer, Buffer )
-cut s b =
-    if s.start.row == s.end.row then
+cut sel buf =
+    if sel.start.row == sel.end.row then
         let
             l =
-                get s.start.row b
+                get sel.start.row buf
 
-            omg =
-                Line.split s.end.col l
+            ( ab, c ) =
+                Line.split sel.end.col l
 
-            wat =
-                Line.split s.start.col (fst omg)
+            ( a, b ) =
+                Line.split sel.start.col ab
         in
-            ( set s.start.row (fst wat ++ snd omg) b, (Array.repeat 1 (snd wat)) )
+            ( set sel.start.row (a ++ c) buf, (Array.repeat 1 b) )
     else
-        ( b, b )
-
+        ( buf, buf )

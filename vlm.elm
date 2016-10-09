@@ -296,6 +296,26 @@ deleteSelection m =
         }
 
 
+pasteBefore : Model -> Model
+pasteBefore m =
+    let
+        clip =
+            Buffer.get 0 m.registry
+
+        newLine =
+            Line.insert m.cursor.col clip (currentLine m)
+    in
+        { m
+            | buffer = Buffer.set m.cursor.row newLine m.buffer
+            , cursor = Cursor.withCol (m.cursor.col + String.length clip) m.cursor
+        }
+
+
+pasteAfter : Model -> Model
+pasteAfter m =
+    pasteBefore (cursorRight m)
+
+
 startVisualMode : Model -> Model
 startVisualMode m =
     startSelection { m | mode = Visual }
@@ -321,8 +341,8 @@ init =
     ( Model
         (Cursor 0 0)
         (Cursor 0 0)
-        (Array.fromList [ "" ])
         (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line" ])
+        (Array.fromList [ "paste!" ])
         80
         10
         "this is the log"
@@ -469,6 +489,10 @@ onKeyPress c m =
                 79 ->
                     insertLineBefore { m | mode = Insert }
 
+                -- P
+                80 ->
+                    pasteBefore m
+
                 -- a
                 97 ->
                     startInsertMode (motionRight m)
@@ -504,6 +528,10 @@ onKeyPress c m =
                 -- l
                 108 ->
                     motionRight m
+
+                -- p
+                112 ->
+                    pasteAfter m
 
                 -- o
                 111 ->

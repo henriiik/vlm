@@ -8799,31 +8799,26 @@ var _henriiik$vlm$Buffer$get = F2(
 			A2(_elm_lang$core$Array$get, i, b));
 	});
 var _henriiik$vlm$Buffer$cut = F2(
-	function (s, b) {
-		if (_elm_lang$core$Native_Utils.eq(s.start.row, s.end.row)) {
-			var l = A2(_henriiik$vlm$Buffer$get, s.start.row, b);
-			var omg = A2(_henriiik$vlm$Line$split, s.end.col, l);
-			var wat = A2(
-				_henriiik$vlm$Line$split,
-				s.start.col,
-				_elm_lang$core$Basics$fst(omg));
+	function (sel, buf) {
+		if (_elm_lang$core$Native_Utils.eq(sel.start.row, sel.end.row)) {
+			var l = A2(_henriiik$vlm$Buffer$get, sel.start.row, buf);
+			var _p0 = A2(_henriiik$vlm$Line$split, sel.end.col, l);
+			var ab = _p0._0;
+			var c = _p0._1;
+			var _p1 = A2(_henriiik$vlm$Line$split, sel.start.col, ab);
+			var a = _p1._0;
+			var b = _p1._1;
 			return {
 				ctor: '_Tuple2',
 				_0: A3(
 					_henriiik$vlm$Buffer$set,
-					s.start.row,
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$fst(wat),
-						_elm_lang$core$Basics$snd(omg)),
-					b),
-				_1: A2(
-					_elm_lang$core$Array$repeat,
-					1,
-					_elm_lang$core$Basics$snd(wat))
+					sel.start.row,
+					A2(_elm_lang$core$Basics_ops['++'], a, c),
+					buf),
+				_1: A2(_elm_lang$core$Array$repeat, 1, b)
 			};
 		} else {
-			return {ctor: '_Tuple2', _0: b, _1: b};
+			return {ctor: '_Tuple2', _0: buf, _1: buf};
 		}
 	});
 var _henriiik$vlm$Buffer$splitRight = F2(
@@ -9148,6 +9143,23 @@ var _henriiik$vlm$Main$prevLine = function (m) {
 var _henriiik$vlm$Main$currentLine = function (m) {
 	return A2(_henriiik$vlm$Buffer$get, m.cursor.row, m.buffer);
 };
+var _henriiik$vlm$Main$pasteBefore = function (m) {
+	var clip = A2(_henriiik$vlm$Buffer$get, 0, m.registry);
+	var newLine = A3(
+		_henriiik$vlm$Line$insert,
+		m.cursor.col,
+		clip,
+		_henriiik$vlm$Main$currentLine(m));
+	return _elm_lang$core$Native_Utils.update(
+		m,
+		{
+			buffer: A3(_henriiik$vlm$Buffer$set, m.cursor.row, newLine, m.buffer),
+			cursor: A2(
+				_henriiik$vlm$Cursor$withCol,
+				m.cursor.col + _elm_lang$core$String$length(clip),
+				m.cursor)
+		});
+};
 var _henriiik$vlm$Main$replaceLineAt = F3(
 	function (i, s, m) {
 		return _elm_lang$core$Native_Utils.update(
@@ -9348,6 +9360,10 @@ var _henriiik$vlm$Main$insertChar = F2(
 					_henriiik$vlm$Main$currentLine(m)),
 				m));
 	});
+var _henriiik$vlm$Main$pasteAfter = function (m) {
+	return _henriiik$vlm$Main$pasteBefore(
+		_henriiik$vlm$Main$cursorRight(m));
+};
 var _henriiik$vlm$Main$motionRight = function (m) {
 	return _henriiik$vlm$Main$cursorRight(m);
 };
@@ -9516,6 +9532,8 @@ var _henriiik$vlm$Main$onKeyPress = F2(
 						_elm_lang$core$Native_Utils.update(
 							m,
 							{mode: _henriiik$vlm$Main$Insert}));
+				case 80:
+					return _henriiik$vlm$Main$pasteBefore(m);
 				case 97:
 					return _henriiik$vlm$Main$startInsertMode(
 						_henriiik$vlm$Main$motionRight(m));
@@ -9537,6 +9555,8 @@ var _henriiik$vlm$Main$onKeyPress = F2(
 					return _henriiik$vlm$Main$cursorUp(m);
 				case 108:
 					return _henriiik$vlm$Main$motionRight(m);
+				case 112:
+					return _henriiik$vlm$Main$pasteAfter(m);
 				case 111:
 					return _henriiik$vlm$Main$insertLineAfter(
 						_elm_lang$core$Native_Utils.update(
@@ -9560,10 +9580,10 @@ var _henriiik$vlm$Main$init = {
 		A2(_henriiik$vlm$Cursor$Cursor, 0, 0))(
 		_elm_lang$core$Array$fromList(
 			_elm_lang$core$Native_List.fromArray(
-				[''])))(
+				['this is the buffer', 'this is the second line', 'this is the third line'])))(
 		_elm_lang$core$Array$fromList(
 			_elm_lang$core$Native_List.fromArray(
-				['this is the buffer', 'this is the second line', 'this is the third line'])))(80)(10)('this is the log')(_henriiik$vlm$Main$Normal)(false)(false)(false),
+				['paste!'])))(80)(10)('this is the log')(_henriiik$vlm$Main$Normal)(false)(false)(false),
 	_1: _elm_lang$core$Platform_Cmd$none
 };
 var _henriiik$vlm$Main$onKeyDown = F2(
