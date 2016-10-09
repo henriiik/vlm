@@ -299,15 +299,21 @@ deleteSelection m =
 pasteBefore : Model -> Model
 pasteBefore m =
     let
-        clip =
-            Buffer.get 0 m.registry
+        ( a, c ) =
+            Buffer.split m.cursor m.buffer
 
-        newLine =
-            Line.insert m.cursor.col clip (currentLine m)
+        ab =
+            Buffer.join a m.registry
+
+        row =
+            Array.length ab - 1
+
+        col =
+            (String.length (Buffer.get row ab)) - 1
     in
         { m
-            | buffer = Buffer.set m.cursor.row newLine m.buffer
-            , cursor = Cursor.withCol (m.cursor.col + String.length clip) m.cursor
+            | buffer = Buffer.join ab c
+            , cursor = Cursor row col
         }
 
 

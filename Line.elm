@@ -18,8 +18,6 @@ split i a =
     ( String.left i a, String.right ((String.length a) - i) a )
 
 
-
-
 deleteChar : Int -> Line -> Line
 deleteChar i a =
     let

@@ -5,8 +5,10 @@ module Buffer
         , cut
         , get
         , insert
+        , join
         , remove
         , set
+        , split
         , splitLeft
         , splitRight
         )
@@ -53,9 +55,41 @@ get i b =
         |> Maybe.withDefault ""
 
 
+last : Buffer -> String
+last buf =
+    get ((Array.length buf) - 1) buf
+
+
 set : Int -> String -> Buffer -> Buffer
 set i s b =
     Array.set i s b
+
+
+split : Cursor -> Buffer -> ( Buffer, Buffer )
+split cur buf =
+    let
+        top =
+            splitLeft cur.row buf
+
+        bot =
+            splitRight cur.row buf
+
+        ( left, right ) =
+            Line.split cur.col (get 0 bot)
+    in
+        ( Array.push left top, set 0 right bot )
+
+
+join : Buffer -> Buffer -> Buffer
+join a b =
+    let
+        i =
+            (Array.length a) - 1
+
+        line =
+            (get i a) ++ (get 0 b)
+    in
+        Array.append (Array.slice 0 -1 a) (set 0 line b)
 
 
 cut : Selection -> Buffer -> ( Buffer, Buffer )
@@ -73,4 +107,11 @@ cut sel buf =
         in
             ( set sel.start.row (a ++ c) buf, (Array.repeat 1 b) )
     else
-        ( buf, buf )
+        let
+            ( ab, c ) =
+                split sel.end buf
+
+            ( a, b ) =
+                split sel.start ab
+        in
+            Debug.log "cut" ( join a c, b )
