@@ -612,7 +612,11 @@ renderBuffer m =
                 , ( "height", asPx (m.height * 15) )
                 ]
             ]
-            (Array.toList (Array.indexedMap (lineMapper m.mode s) m.buffer))
+            (m.buffer
+                |> Array.slice 0 m.height
+                |> Array.indexedMap (lineMapper m.mode s)
+                |> Array.toList
+            )
 
 
 lineMapper : Mode -> Selection -> Int -> Line -> Html Msg

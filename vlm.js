@@ -8927,7 +8927,7 @@ var _henriiik$vlm$Register$insert = F3(
 					_elm_lang$core$Array$append,
 					A2(_elm_lang$core$Array$append, a, _p0._0),
 					c),
-				_1: cur
+				_1: A2(_henriiik$vlm$Cursor$withCol, 0, cur)
 			};
 		}
 	});
@@ -9527,7 +9527,7 @@ var _henriiik$vlm$Main$renderBuffer = function (m) {
 			A2(
 				_elm_lang$core$Array$indexedMap,
 				A2(_henriiik$vlm$Main$lineMapper, m.mode, s),
-				m.buffer)));
+				A3(_elm_lang$core$Array$slice, 0, m.height, m.buffer))));
 };
 var _henriiik$vlm$Main$view = function (m) {
 	return A2(
