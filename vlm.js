@@ -9192,6 +9192,13 @@ var _henriiik$vlm$Main$onKeyUp = F2(
 				return m;
 		}
 	});
+var _henriiik$vlm$Main$motionLeft = function (m) {
+	return _elm_lang$core$Native_Utils.eq(m.cursor.col, 0) ? m : _elm_lang$core$Native_Utils.update(
+		m,
+		{
+			cursor: _henriiik$vlm$Cursor$left(m.cursor)
+		});
+};
 var _henriiik$vlm$Main$pasteBefore = function (m) {
 	var _p2 = A3(_henriiik$vlm$Register$insert, m.register, m.cursor, m.buffer);
 	var buf = _p2._0;
@@ -9294,6 +9301,19 @@ var _henriiik$vlm$Main$prevLine = function (m) {
 var _henriiik$vlm$Main$currentLine = function (m) {
 	return A2(_henriiik$vlm$Buffer$get, m.cursor.row, m.buffer);
 };
+var _henriiik$vlm$Main$currentLineLength = function (m) {
+	return _elm_lang$core$String$length(
+		_henriiik$vlm$Main$currentLine(m));
+};
+var _henriiik$vlm$Main$motionRight = function (m) {
+	return (_elm_lang$core$Native_Utils.cmp(
+		m.cursor.col,
+		_henriiik$vlm$Main$currentLineLength(m)) > -1) ? m : _elm_lang$core$Native_Utils.update(
+		m,
+		{
+			cursor: _henriiik$vlm$Cursor$right(m.cursor)
+		});
+};
 var _henriiik$vlm$Main$replaceLineAt = F3(
 	function (i, s, m) {
 		return _elm_lang$core$Native_Utils.update(
@@ -9315,6 +9335,18 @@ var _henriiik$vlm$Main$deleteCharRight = function (m) {
 			_henriiik$vlm$Main$currentLine(m)),
 		m);
 };
+var _henriiik$vlm$Main$insertChar = F2(
+	function (c, m) {
+		return _henriiik$vlm$Main$motionRight(
+			A2(
+				_henriiik$vlm$Main$replaceCurrentLine,
+				A3(
+					_henriiik$vlm$Line$insert,
+					m.cursor.col,
+					_henriiik$vlm$Main$fromCode(c),
+					_henriiik$vlm$Main$currentLine(m)),
+				m));
+	});
 var _henriiik$vlm$Main$currentSelection = function (m) {
 	return A2(_henriiik$vlm$Selection$fromCursors, m.cursor, m.selectionStart);
 };
@@ -9462,53 +9494,15 @@ var _henriiik$vlm$Main$motionWordEnd = function (m) {
 		}
 	}
 };
-var _henriiik$vlm$Main$cursorRight = function (m) {
-	var col = A2(
-		_elm_lang$core$Basics$min,
-		m.cursor.col + 1,
-		_elm_lang$core$String$length(
-			_henriiik$vlm$Main$currentLine(m)));
-	return _elm_lang$core$Native_Utils.update(
-		m,
-		{
-			cursor: A2(_henriiik$vlm$Cursor$withCol, col, m.cursor)
-		});
-};
-var _henriiik$vlm$Main$insertChar = F2(
-	function (c, m) {
-		return _henriiik$vlm$Main$cursorRight(
-			A2(
-				_henriiik$vlm$Main$replaceCurrentLine,
-				A3(
-					_henriiik$vlm$Line$insert,
-					m.cursor.col,
-					_henriiik$vlm$Main$fromCode(c),
-					_henriiik$vlm$Main$currentLine(m)),
-				m));
-	});
 var _henriiik$vlm$Main$pasteAfter = function (m) {
 	var _p8 = m.register;
 	if (_p8.ctor === 'Normal') {
 		return _henriiik$vlm$Main$pasteBefore(
-			_henriiik$vlm$Main$cursorRight(m));
+			_henriiik$vlm$Main$motionRight(m));
 	} else {
 		return _henriiik$vlm$Main$pasteBefore(
 			_henriiik$vlm$Main$cursorDown(m));
 	}
-};
-var _henriiik$vlm$Main$motionRight = function (m) {
-	return _henriiik$vlm$Main$cursorRight(m);
-};
-var _henriiik$vlm$Main$cursorLeft = function (m) {
-	var col = A2(_elm_lang$core$Basics$max, m.cursor.col - 1, 0);
-	return _elm_lang$core$Native_Utils.update(
-		m,
-		{
-			cursor: A2(_henriiik$vlm$Cursor$withCol, col, m.cursor)
-		});
-};
-var _henriiik$vlm$Main$motionLeft = function (m) {
-	return _henriiik$vlm$Main$cursorLeft(m);
 };
 var _henriiik$vlm$Main$Model = function (a) {
 	return function (b) {

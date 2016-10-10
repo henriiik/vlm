@@ -51,24 +51,6 @@ type alias Model =
     }
 
 
-cursorLeft : Model -> Model
-cursorLeft m =
-    let
-        col =
-            (max (m.cursor.col - 1) 0)
-    in
-        { m | cursor = (Cursor.withCol col m.cursor) }
-
-
-cursorRight : Model -> Model
-cursorRight m =
-    let
-        col =
-            (min (m.cursor.col + 1) (String.length (currentLine m)))
-    in
-        { m | cursor = (Cursor.withCol col m.cursor) }
-
-
 cursorDown : Model -> Model
 cursorDown m =
     let
@@ -102,9 +84,6 @@ currentSelection m =
     Selection.fromCursors m.cursor m.selectionStart
 
 
-
-
-
 replaceLineAt : Int -> Line -> Model -> Model
 replaceLineAt i s m =
     { m | buffer = (Buffer.set i s m.buffer) }
@@ -118,6 +97,13 @@ replaceCurrentLine s m =
 currentLine : Model -> Line
 currentLine m =
     Buffer.get m.cursor.row m.buffer
+
+
+currentLineLength : Model -> Int
+currentLineLength m =
+    m
+        |> currentLine
+        |> String.length
 
 
 prevLine : Model -> Line
@@ -222,7 +208,7 @@ insertChar : KeyCode -> Model -> Model
 insertChar c m =
     m
         |> replaceCurrentLine (Line.insert m.cursor.col (fromCode c) (currentLine m))
-        |> cursorRight
+        |> motionRight
 
 
 insertLineAt : String -> Int -> Model -> Model
@@ -312,7 +298,7 @@ pasteAfter : Model -> Model
 pasteAfter m =
     case m.register of
         Register.Normal _ ->
-            pasteBefore (cursorRight m)
+            pasteBefore (motionRight m)
 
         Register.Line _ ->
             pasteBefore (cursorDown m)
@@ -330,12 +316,18 @@ startInsertMode m =
 
 motionLeft : Model -> Model
 motionLeft m =
-    cursorLeft m
+    if m.cursor.col == 0 then
+        m
+    else
+        { m | cursor = Cursor.left m.cursor }
 
 
 motionRight : Model -> Model
 motionRight m =
-    cursorRight m
+    if m.cursor.col >= currentLineLength m then
+        m
+    else
+        { m | cursor = Cursor.right m.cursor }
 
 
 init : ( Model, Cmd Msg )
