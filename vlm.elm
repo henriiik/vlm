@@ -4,6 +4,7 @@ import Array
 import Char
 import Cursor exposing (Cursor)
 import Buffer exposing (Buffer, Selection)
+import Register exposing (Register)
 import Line exposing (Line)
 import Html exposing (..)
 import Html.App
@@ -38,7 +39,7 @@ type alias Model =
     { cursor : Cursor
     , selectionStart : Cursor
     , buffer : Buffer
-    , registry : Buffer
+    , register : Register
     , width : Int
     , height : Int
     , log : String
@@ -282,44 +283,40 @@ startSelection m =
 deleteSelection : Model -> Model
 deleteSelection m =
     let
-        s =
+        sel =
             currentSelection m
 
-        cut =
-            Buffer.cut s m.buffer
+        ( buf, reg ) =
+            Buffer.cut sel m.buffer
     in
         { m
             | mode = Normal
-            , cursor = s.start
-            , buffer = (fst cut)
-            , registry = (snd cut)
+            , cursor = sel.start
+            , buffer = buf
+            , register = Register.Normal reg
         }
 
 
 pasteBefore : Model -> Model
 pasteBefore m =
     let
-        ( a, c ) =
-            Buffer.split m.cursor m.buffer
-
-        ab =
-            Buffer.join a m.registry
-
-        row =
-            Array.length ab - 1
-
-        col =
-            (String.length (Buffer.get row ab)) - 1
+        ( buf, cur ) =
+            Register.insert m.register m.cursor m.buffer
     in
         { m
-            | buffer = Buffer.join ab c
-            , cursor = Cursor row col
+            | buffer = buf
+            , cursor = cur
         }
 
 
 pasteAfter : Model -> Model
 pasteAfter m =
-    pasteBefore (cursorRight m)
+    case m.register of
+        Register.Normal _ ->
+            pasteBefore (cursorRight m)
+
+        Register.Line _ ->
+            pasteBefore (cursorDown m)
 
 
 startVisualMode : Model -> Model
@@ -348,7 +345,7 @@ init =
         (Cursor 0 0)
         (Cursor 0 0)
         (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line" ])
-        (Array.fromList [ "paste!" ])
+        (Register.Line (Array.fromList [ "paste!" ]))
         80
         10
         "this is the log"

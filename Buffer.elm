@@ -38,6 +38,21 @@ splitRight i b =
     Array.slice i (Array.length b) b
 
 
+split : Cursor -> Buffer -> ( Buffer, Buffer )
+split cur buf =
+    let
+        top =
+            splitLeft cur.row buf
+
+        bot =
+            splitRight cur.row buf
+
+        ( left, right ) =
+            Line.split cur.col (get 0 bot)
+    in
+        ( Array.push left top, set 0 right bot )
+
+
 insert : Int -> String -> Buffer -> Buffer
 insert i s b =
     Array.append (Array.push s (splitLeft i b)) (splitRight i b)
@@ -63,21 +78,6 @@ last buf =
 set : Int -> String -> Buffer -> Buffer
 set i s b =
     Array.set i s b
-
-
-split : Cursor -> Buffer -> ( Buffer, Buffer )
-split cur buf =
-    let
-        top =
-            splitLeft cur.row buf
-
-        bot =
-            splitRight cur.row buf
-
-        ( left, right ) =
-            Line.split cur.col (get 0 bot)
-    in
-        ( Array.push left top, set 0 right bot )
 
 
 join : Buffer -> Buffer -> Buffer

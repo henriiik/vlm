@@ -8828,23 +8828,6 @@ var _henriiik$vlm$Buffer$splitLeft = F2(
 	function (i, b) {
 		return A3(_elm_lang$core$Array$slice, 0, i, b);
 	});
-var _henriiik$vlm$Buffer$insert = F3(
-	function (i, s, b) {
-		return A2(
-			_elm_lang$core$Array$append,
-			A2(
-				_elm_lang$core$Array$push,
-				s,
-				A2(_henriiik$vlm$Buffer$splitLeft, i, b)),
-			A2(_henriiik$vlm$Buffer$splitRight, i, b));
-	});
-var _henriiik$vlm$Buffer$remove = F2(
-	function (i, b) {
-		return A2(
-			_elm_lang$core$Array$append,
-			A2(_henriiik$vlm$Buffer$splitLeft, i, b),
-			A2(_henriiik$vlm$Buffer$splitRight, i + 1, b));
-	});
 var _henriiik$vlm$Buffer$split = F2(
 	function (cur, buf) {
 		var bot = A2(_henriiik$vlm$Buffer$splitRight, cur.row, buf);
@@ -8897,10 +8880,63 @@ var _henriiik$vlm$Buffer$cut = F2(
 				});
 		}
 	});
+var _henriiik$vlm$Buffer$insert = F3(
+	function (i, s, b) {
+		return A2(
+			_elm_lang$core$Array$append,
+			A2(
+				_elm_lang$core$Array$push,
+				s,
+				A2(_henriiik$vlm$Buffer$splitLeft, i, b)),
+			A2(_henriiik$vlm$Buffer$splitRight, i, b));
+	});
+var _henriiik$vlm$Buffer$remove = F2(
+	function (i, b) {
+		return A2(
+			_elm_lang$core$Array$append,
+			A2(_henriiik$vlm$Buffer$splitLeft, i, b),
+			A2(_henriiik$vlm$Buffer$splitRight, i + 1, b));
+	});
 var _henriiik$vlm$Buffer$Selection = F2(
 	function (a, b) {
 		return {start: a, end: b};
 	});
+
+var _henriiik$vlm$Register$insert = F3(
+	function (reg, cur, buf) {
+		var _p0 = reg;
+		if (_p0.ctor === 'Normal') {
+			var _p1 = A2(_henriiik$vlm$Buffer$split, cur, buf);
+			var a = _p1._0;
+			var c = _p1._1;
+			var ab = A2(_henriiik$vlm$Buffer$join, a, _p0._0);
+			var row = _elm_lang$core$Array$length(ab) - 1;
+			var col = _elm_lang$core$String$length(
+				A2(_henriiik$vlm$Buffer$get, row, ab)) - 1;
+			return {
+				ctor: '_Tuple2',
+				_0: A2(_henriiik$vlm$Buffer$join, ab, c),
+				_1: A2(_henriiik$vlm$Cursor$Cursor, row, col)
+			};
+		} else {
+			var c = A2(_henriiik$vlm$Buffer$splitRight, cur.row, buf);
+			var a = A2(_henriiik$vlm$Buffer$splitLeft, cur.row, buf);
+			return {
+				ctor: '_Tuple2',
+				_0: A2(
+					_elm_lang$core$Array$append,
+					A2(_elm_lang$core$Array$append, a, _p0._0),
+					c),
+				_1: cur
+			};
+		}
+	});
+var _henriiik$vlm$Register$Line = function (a) {
+	return {ctor: 'Line', _0: a};
+};
+var _henriiik$vlm$Register$Normal = function (a) {
+	return {ctor: 'Normal', _0: a};
+};
 
 var _henriiik$vlm$Main$asPx = function (x) {
 	return A2(
@@ -9097,19 +9133,12 @@ var _henriiik$vlm$Main$onKeyUp = F2(
 		}
 	});
 var _henriiik$vlm$Main$pasteBefore = function (m) {
-	var _p2 = A2(_henriiik$vlm$Buffer$split, m.cursor, m.buffer);
-	var a = _p2._0;
-	var c = _p2._1;
-	var ab = A2(_henriiik$vlm$Buffer$join, a, m.registry);
-	var row = _elm_lang$core$Array$length(ab) - 1;
-	var col = _elm_lang$core$String$length(
-		A2(_henriiik$vlm$Buffer$get, row, ab)) - 1;
+	var _p2 = A3(_henriiik$vlm$Register$insert, m.register, m.cursor, m.buffer);
+	var buf = _p2._0;
+	var cur = _p2._1;
 	return _elm_lang$core$Native_Utils.update(
 		m,
-		{
-			buffer: A2(_henriiik$vlm$Buffer$join, ab, c),
-			cursor: A2(_henriiik$vlm$Cursor$Cursor, row, col)
-		});
+		{buffer: buf, cursor: cur});
 };
 var _henriiik$vlm$Main$startSelection = function (m) {
 	return _elm_lang$core$Native_Utils.update(
@@ -9406,8 +9435,14 @@ var _henriiik$vlm$Main$insertChar = F2(
 				m));
 	});
 var _henriiik$vlm$Main$pasteAfter = function (m) {
-	return _henriiik$vlm$Main$pasteBefore(
-		_henriiik$vlm$Main$cursorRight(m));
+	var _p9 = m.register;
+	if (_p9.ctor === 'Normal') {
+		return _henriiik$vlm$Main$pasteBefore(
+			_henriiik$vlm$Main$cursorRight(m));
+	} else {
+		return _henriiik$vlm$Main$pasteBefore(
+			_henriiik$vlm$Main$cursorDown(m));
+	}
 };
 var _henriiik$vlm$Main$motionRight = function (m) {
 	return _henriiik$vlm$Main$cursorRight(m);
@@ -9434,7 +9469,7 @@ var _henriiik$vlm$Main$Model = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return {cursor: a, selectionStart: b, buffer: c, registry: d, width: e, height: f, log: g, mode: h, ctrl: i, shift: j, alt: k};
+											return {cursor: a, selectionStart: b, buffer: c, register: d, width: e, height: f, log: g, mode: h, ctrl: i, shift: j, alt: k};
 										};
 									};
 								};
@@ -9538,30 +9573,32 @@ var _henriiik$vlm$Main$startInsertMode = function (m) {
 };
 var _henriiik$vlm$Main$Normal = {ctor: 'Normal'};
 var _henriiik$vlm$Main$deleteSelection = function (m) {
-	var s = _henriiik$vlm$Main$currentSelection(m);
-	var cut = A2(_henriiik$vlm$Buffer$cut, s, m.buffer);
+	var sel = _henriiik$vlm$Main$currentSelection(m);
+	var _p10 = A2(_henriiik$vlm$Buffer$cut, sel, m.buffer);
+	var buf = _p10._0;
+	var reg = _p10._1;
 	return _elm_lang$core$Native_Utils.update(
 		m,
 		{
 			mode: _henriiik$vlm$Main$Normal,
-			cursor: s.start,
-			buffer: _elm_lang$core$Basics$fst(cut),
-			registry: _elm_lang$core$Basics$snd(cut)
+			cursor: sel.start,
+			buffer: buf,
+			register: _henriiik$vlm$Register$Normal(reg)
 		});
 };
 var _henriiik$vlm$Main$onKeyPress = F2(
 	function (c, m) {
-		var _p9 = m.mode;
-		if (_p9.ctor === 'Insert') {
-			var _p10 = c;
-			if (_p10 === 13) {
+		var _p11 = m.mode;
+		if (_p11.ctor === 'Insert') {
+			var _p12 = c;
+			if (_p12 === 13) {
 				return _henriiik$vlm$Main$splitLine(m);
 			} else {
 				return A2(_henriiik$vlm$Main$insertChar, c, m);
 			}
 		} else {
-			var _p11 = c;
-			switch (_p11) {
+			var _p13 = c;
+			switch (_p13) {
 				case 65:
 					return _henriiik$vlm$Main$cursorEnd(
 						_elm_lang$core$Native_Utils.update(
@@ -9626,15 +9663,16 @@ var _henriiik$vlm$Main$init = {
 		_elm_lang$core$Array$fromList(
 			_elm_lang$core$Native_List.fromArray(
 				['this is the buffer', 'this is the second line', 'this is the third line'])))(
-		_elm_lang$core$Array$fromList(
-			_elm_lang$core$Native_List.fromArray(
-				['paste!'])))(80)(10)('this is the log')(_henriiik$vlm$Main$Normal)(false)(false)(false),
+		_henriiik$vlm$Register$Line(
+			_elm_lang$core$Array$fromList(
+				_elm_lang$core$Native_List.fromArray(
+					['paste!']))))(80)(10)('this is the log')(_henriiik$vlm$Main$Normal)(false)(false)(false),
 	_1: _elm_lang$core$Platform_Cmd$none
 };
 var _henriiik$vlm$Main$onKeyDown = F2(
 	function (c, m) {
-		var _p12 = c;
-		switch (_p12) {
+		var _p14 = c;
+		switch (_p14) {
 			case 16:
 				return _elm_lang$core$Native_Utils.update(
 					m,
@@ -9656,11 +9694,11 @@ var _henriiik$vlm$Main$onKeyDown = F2(
 			case 40:
 				return _henriiik$vlm$Main$cursorDown(m);
 			default:
-				var _p13 = m.mode;
-				switch (_p13.ctor) {
+				var _p15 = m.mode;
+				switch (_p15.ctor) {
 					case 'Insert':
-						var _p14 = c;
-						switch (_p14) {
+						var _p16 = c;
+						switch (_p16) {
 							case 27:
 								return _elm_lang$core$Native_Utils.update(
 									m,
@@ -9674,8 +9712,8 @@ var _henriiik$vlm$Main$onKeyDown = F2(
 								return m;
 						}
 					case 'Visual':
-						var _p15 = c;
-						if (_p15 === 27) {
+						var _p17 = c;
+						if (_p17 === 27) {
 							return _elm_lang$core$Native_Utils.update(
 								m,
 								{mode: _henriiik$vlm$Main$Normal});
@@ -9689,12 +9727,12 @@ var _henriiik$vlm$Main$onKeyDown = F2(
 	});
 var _henriiik$vlm$Main$update = F2(
 	function (msg, model) {
-		var _p16 = msg;
-		switch (_p16.ctor) {
+		var _p18 = msg;
+		switch (_p18.ctor) {
 			case 'KeyDown':
-				var _p17 = _p16._0;
-				var model = A2(_henriiik$vlm$Main$onKeyDown, _p17, model);
-				var log = A3(_henriiik$vlm$Main$newLog, 'down', _p17, model.log);
+				var _p19 = _p18._0;
+				var model = A2(_henriiik$vlm$Main$onKeyDown, _p19, model);
+				var log = A3(_henriiik$vlm$Main$newLog, 'down', _p19, model.log);
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9705,13 +9743,13 @@ var _henriiik$vlm$Main$update = F2(
 			case 'KeyUp':
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_henriiik$vlm$Main$onKeyUp, _p16._0, model),
+					_0: A2(_henriiik$vlm$Main$onKeyUp, _p18._0, model),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
-				var _p18 = _p16._0;
-				var model = A2(_henriiik$vlm$Main$onKeyPress, _p18, model);
-				var log = A3(_henriiik$vlm$Main$newLog, 'press', _p18, model.log);
+				var _p20 = _p18._0;
+				var model = A2(_henriiik$vlm$Main$onKeyPress, _p20, model);
+				var log = A3(_henriiik$vlm$Main$newLog, 'press', _p20, model.log);
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
