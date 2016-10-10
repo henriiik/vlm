@@ -9089,6 +9089,21 @@ var _henriiik$vlm$Main$renderLine = F3(
 					h
 				]));
 	});
+var _henriiik$vlm$Main$renderLog = function (log) {
+	return A3(
+		_elm_lang$core$List$foldr,
+		F2(
+			function (a, b) {
+				return A2(_elm_lang$core$Basics_ops['++'], a, b);
+			}),
+		'',
+		A2(
+			_elm_lang$core$List$map,
+			function (a) {
+				return A2(_elm_lang$core$Basics_ops['++'], a, '\n');
+			},
+			log));
+};
 var _henriiik$vlm$Main$fromCode = function (code) {
 	return _elm_lang$core$String$fromChar(
 		_elm_lang$core$Char$fromCode(code));
@@ -9096,21 +9111,27 @@ var _henriiik$vlm$Main$fromCode = function (code) {
 var _henriiik$vlm$Main$newLog = F3(
 	function (a, c, log) {
 		return A2(
-			_elm_lang$core$Basics_ops['++'],
-			a,
+			_elm_lang$core$List$take,
+			10,
 			A2(
-				_elm_lang$core$Basics_ops['++'],
-				': ',
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(c),
-					A2(
+				_elm_lang$core$List$append,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
 						_elm_lang$core$Basics_ops['++'],
-						' - ',
+						a,
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							_henriiik$vlm$Main$fromCode(c),
-							A2(_elm_lang$core$Basics_ops['++'], '\n', log))))));
+							': ',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_elm_lang$core$Basics$toString(c),
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									' - ',
+									_henriiik$vlm$Main$fromCode(c)))))
+					]),
+				log));
 	});
 var _henriiik$vlm$Main$onKeyUp = F2(
 	function (c, m) {
@@ -9561,7 +9582,8 @@ var _henriiik$vlm$Main$view = function (m) {
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text(m.log)
+						_elm_lang$html$Html$text(
+						_henriiik$vlm$Main$renderLog(m.log))
 					]))
 			]));
 };
@@ -9666,7 +9688,9 @@ var _henriiik$vlm$Main$init = {
 		_henriiik$vlm$Register$Line(
 			_elm_lang$core$Array$fromList(
 				_elm_lang$core$Native_List.fromArray(
-					['paste!']))))(80)(10)('this is the log')(_henriiik$vlm$Main$Normal)(false)(false)(false),
+					['paste!']))))(80)(20)(
+		_elm_lang$core$Native_List.fromArray(
+			['this is the log']))(_henriiik$vlm$Main$Normal)(false)(false)(false),
 	_1: _elm_lang$core$Platform_Cmd$none
 };
 var _henriiik$vlm$Main$onKeyDown = F2(

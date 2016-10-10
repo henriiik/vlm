@@ -42,7 +42,7 @@ type alias Model =
     , register : Register
     , width : Int
     , height : Int
-    , log : String
+    , log : List String
     , mode : Mode
     , ctrl : Bool
     , shift : Bool
@@ -347,8 +347,8 @@ init =
         (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line" ])
         (Register.Line (Array.fromList [ "paste!" ]))
         80
-        10
-        "this is the log"
+        20
+        [ "this is the log" ]
         Normal
         False
         False
@@ -556,9 +556,11 @@ onKeyPress c m =
                     m
 
 
-newLog : String -> KeyCode -> String -> String
+newLog : String -> KeyCode -> List String -> List String
 newLog a c log =
-    a ++ ": " ++ (toString c) ++ " - " ++ (fromCode c) ++ "\n" ++ log
+    log
+        |> List.append [ a ++ ": " ++ (toString c) ++ " - " ++ (fromCode c) ]
+        |> List.take 10
 
 
 fromCode : KeyCode -> String
@@ -595,8 +597,15 @@ view m =
         [ (renderCursor m)
         , (renderBuffer m)
         , pre [] [ text (statusBarText m) ]
-        , pre [] [ text m.log ]
+        , pre [] [ text (renderLog m.log) ]
         ]
+
+
+renderLog : List String -> String
+renderLog log =
+    log
+        |> List.map (\a -> a ++ "\n")
+        |> List.foldr (\a b -> a ++ b) ""
 
 
 renderBuffer : Model -> Html Msg
