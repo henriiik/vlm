@@ -3,7 +3,8 @@ module Main exposing (..)
 import Array
 import Char
 import Cursor exposing (Cursor)
-import Buffer exposing (Buffer, Selection)
+import Buffer exposing (Buffer)
+import Selection exposing (Selection)
 import Register exposing (Register)
 import Line exposing (Line)
 import Html exposing (..)
@@ -98,12 +99,10 @@ cursorEnd m =
 
 currentSelection : Model -> Selection
 currentSelection m =
-    case Cursor.cmp m.cursor m.selectionStart of
-        LT ->
-            Selection m.cursor m.selectionStart
+    Selection.fromCursors m.cursor m.selectionStart
 
-        _ ->
-            Selection m.selectionStart (Cursor m.cursor.row (m.cursor.col + 1))
+
+
 
 
 replaceLineAt : Int -> Line -> Model -> Model

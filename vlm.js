@@ -8736,6 +8736,26 @@ var _henriiik$vlm$Cursor$cmp = F2(
 	function (a, b) {
 		return (_elm_lang$core$Native_Utils.cmp(a.row, b.row) > 0) ? _elm_lang$core$Basics$GT : ((_elm_lang$core$Native_Utils.cmp(a.row, b.row) < 0) ? _elm_lang$core$Basics$LT : A2(_elm_lang$core$Basics$compare, a.col, b.col));
 	});
+var _henriiik$vlm$Cursor$down = function (cur) {
+	return _elm_lang$core$Native_Utils.update(
+		cur,
+		{row: cur.row + 1});
+};
+var _henriiik$vlm$Cursor$up = function (cur) {
+	return _elm_lang$core$Native_Utils.update(
+		cur,
+		{row: cur.row - 1});
+};
+var _henriiik$vlm$Cursor$right = function (cur) {
+	return _elm_lang$core$Native_Utils.update(
+		cur,
+		{col: cur.col + 1});
+};
+var _henriiik$vlm$Cursor$left = function (cur) {
+	return _elm_lang$core$Native_Utils.update(
+		cur,
+		{col: cur.col - 1});
+};
 var _henriiik$vlm$Cursor$withRow = F2(
 	function (i, c) {
 		return _elm_lang$core$Native_Utils.update(
@@ -8785,6 +8805,26 @@ var _henriiik$vlm$Line$insert = F3(
 				_elm_lang$core$Basics_ops['++'],
 				a,
 				_elm_lang$core$Basics$snd(s)));
+	});
+
+var _henriiik$vlm$Selection$Selection = F2(
+	function (a, b) {
+		return {start: a, end: b};
+	});
+var _henriiik$vlm$Selection$fromCursors = F2(
+	function (a, b) {
+		var _p0 = A2(_henriiik$vlm$Cursor$cmp, a, b);
+		if (_p0.ctor === 'LT') {
+			return A2(
+				_henriiik$vlm$Selection$Selection,
+				a,
+				_henriiik$vlm$Cursor$right(b));
+		} else {
+			return A2(
+				_henriiik$vlm$Selection$Selection,
+				b,
+				_henriiik$vlm$Cursor$right(a));
+		}
 	});
 
 var _henriiik$vlm$Buffer$set = F3(
@@ -8896,10 +8936,6 @@ var _henriiik$vlm$Buffer$remove = F2(
 			_elm_lang$core$Array$append,
 			A2(_henriiik$vlm$Buffer$splitLeft, i, b),
 			A2(_henriiik$vlm$Buffer$splitRight, i + 1, b));
-	});
-var _henriiik$vlm$Buffer$Selection = F2(
-	function (a, b) {
-		return {start: a, end: b};
 	});
 
 var _henriiik$vlm$Register$insert = F3(
@@ -9280,15 +9316,7 @@ var _henriiik$vlm$Main$deleteCharRight = function (m) {
 		m);
 };
 var _henriiik$vlm$Main$currentSelection = function (m) {
-	var _p3 = A2(_henriiik$vlm$Cursor$cmp, m.cursor, m.selectionStart);
-	if (_p3.ctor === 'LT') {
-		return A2(_henriiik$vlm$Buffer$Selection, m.cursor, m.selectionStart);
-	} else {
-		return A2(
-			_henriiik$vlm$Buffer$Selection,
-			m.selectionStart,
-			A2(_henriiik$vlm$Cursor$Cursor, m.cursor.row, m.cursor.col + 1));
-	}
+	return A2(_henriiik$vlm$Selection$fromCursors, m.cursor, m.selectionStart);
 };
 var _henriiik$vlm$Main$cursorEnd = function (m) {
 	return _elm_lang$core$Native_Utils.update(
@@ -9332,27 +9360,27 @@ var _henriiik$vlm$Main$cursorUp = function (m) {
 		});
 };
 var _henriiik$vlm$Main$motionWordBack = function (m) {
-	var _p4 = A2(
+	var _p3 = A2(
 		_henriiik$vlm$Main$prevIndex,
 		m.cursor.col,
 		_henriiik$vlm$Main$wordIndexes(
 			_henriiik$vlm$Main$currentLine(m)));
-	if (_p4.ctor === 'Just') {
+	if (_p3.ctor === 'Just') {
 		return _elm_lang$core$Native_Utils.update(
 			m,
 			{
-				cursor: A2(_henriiik$vlm$Cursor$withCol, _p4._0, m.cursor)
+				cursor: A2(_henriiik$vlm$Cursor$withCol, _p3._0, m.cursor)
 			});
 	} else {
-		var _p5 = _henriiik$vlm$Main$lastIndex(
+		var _p4 = _henriiik$vlm$Main$lastIndex(
 			_henriiik$vlm$Main$wordIndexes(
 				_henriiik$vlm$Main$prevLine(m)));
-		if (_p5.ctor === 'Just') {
+		if (_p4.ctor === 'Just') {
 			return _henriiik$vlm$Main$cursorUp(
 				_elm_lang$core$Native_Utils.update(
 					m,
 					{
-						cursor: A2(_henriiik$vlm$Cursor$withCol, _p5._0, m.cursor)
+						cursor: A2(_henriiik$vlm$Cursor$withCol, _p4._0, m.cursor)
 					}));
 		} else {
 			return _henriiik$vlm$Main$cursorUp(m);
@@ -9388,10 +9416,27 @@ var _henriiik$vlm$Main$cursorDown = function (m) {
 		});
 };
 var _henriiik$vlm$Main$motionWord = function (m) {
-	var _p6 = A2(
+	var _p5 = A2(
 		_henriiik$vlm$Main$nextIndex,
 		m.cursor.col,
 		_henriiik$vlm$Main$wordIndexes(
+			_henriiik$vlm$Main$currentLine(m)));
+	if (_p5.ctor === 'Just') {
+		return _elm_lang$core$Native_Utils.update(
+			m,
+			{
+				cursor: A2(_henriiik$vlm$Cursor$withCol, _p5._0, m.cursor)
+			});
+	} else {
+		return _henriiik$vlm$Main$cursorStart(
+			_henriiik$vlm$Main$cursorDown(m));
+	}
+};
+var _henriiik$vlm$Main$motionWordEnd = function (m) {
+	var _p6 = A2(
+		_henriiik$vlm$Main$nextIndex,
+		m.cursor.col,
+		_henriiik$vlm$Main$wordEndIndexes(
 			_henriiik$vlm$Main$currentLine(m)));
 	if (_p6.ctor === 'Just') {
 		return _elm_lang$core$Native_Utils.update(
@@ -9400,34 +9445,17 @@ var _henriiik$vlm$Main$motionWord = function (m) {
 				cursor: A2(_henriiik$vlm$Cursor$withCol, _p6._0, m.cursor)
 			});
 	} else {
-		return _henriiik$vlm$Main$cursorStart(
-			_henriiik$vlm$Main$cursorDown(m));
-	}
-};
-var _henriiik$vlm$Main$motionWordEnd = function (m) {
-	var _p7 = A2(
-		_henriiik$vlm$Main$nextIndex,
-		m.cursor.col,
-		_henriiik$vlm$Main$wordEndIndexes(
-			_henriiik$vlm$Main$currentLine(m)));
-	if (_p7.ctor === 'Just') {
-		return _elm_lang$core$Native_Utils.update(
-			m,
-			{
-				cursor: A2(_henriiik$vlm$Cursor$withCol, _p7._0, m.cursor)
-			});
-	} else {
-		var _p8 = A2(
+		var _p7 = A2(
 			_henriiik$vlm$Main$nextIndex,
 			0,
 			_henriiik$vlm$Main$wordEndIndexes(
 				_henriiik$vlm$Main$nextLine(m)));
-		if (_p8.ctor === 'Just') {
+		if (_p7.ctor === 'Just') {
 			return _henriiik$vlm$Main$cursorDown(
 				_elm_lang$core$Native_Utils.update(
 					m,
 					{
-						cursor: A2(_henriiik$vlm$Cursor$withCol, _p8._0, m.cursor)
+						cursor: A2(_henriiik$vlm$Cursor$withCol, _p7._0, m.cursor)
 					}));
 		} else {
 			return _henriiik$vlm$Main$cursorDown(m);
@@ -9459,8 +9487,8 @@ var _henriiik$vlm$Main$insertChar = F2(
 				m));
 	});
 var _henriiik$vlm$Main$pasteAfter = function (m) {
-	var _p9 = m.register;
-	if (_p9.ctor === 'Normal') {
+	var _p8 = m.register;
+	if (_p8.ctor === 'Normal') {
 		return _henriiik$vlm$Main$pasteBefore(
 			_henriiik$vlm$Main$cursorRight(m));
 	} else {
@@ -9599,9 +9627,9 @@ var _henriiik$vlm$Main$startInsertMode = function (m) {
 var _henriiik$vlm$Main$Normal = {ctor: 'Normal'};
 var _henriiik$vlm$Main$deleteSelection = function (m) {
 	var sel = _henriiik$vlm$Main$currentSelection(m);
-	var _p10 = A2(_henriiik$vlm$Buffer$cut, sel, m.buffer);
-	var buf = _p10._0;
-	var reg = _p10._1;
+	var _p9 = A2(_henriiik$vlm$Buffer$cut, sel, m.buffer);
+	var buf = _p9._0;
+	var reg = _p9._1;
 	return _elm_lang$core$Native_Utils.update(
 		m,
 		{
@@ -9613,17 +9641,17 @@ var _henriiik$vlm$Main$deleteSelection = function (m) {
 };
 var _henriiik$vlm$Main$onKeyPress = F2(
 	function (c, m) {
-		var _p11 = m.mode;
-		if (_p11.ctor === 'Insert') {
-			var _p12 = c;
-			if (_p12 === 13) {
+		var _p10 = m.mode;
+		if (_p10.ctor === 'Insert') {
+			var _p11 = c;
+			if (_p11 === 13) {
 				return _henriiik$vlm$Main$splitLine(m);
 			} else {
 				return A2(_henriiik$vlm$Main$insertChar, c, m);
 			}
 		} else {
-			var _p13 = c;
-			switch (_p13) {
+			var _p12 = c;
+			switch (_p12) {
 				case 65:
 					return _henriiik$vlm$Main$cursorEnd(
 						_elm_lang$core$Native_Utils.update(
@@ -9698,8 +9726,8 @@ var _henriiik$vlm$Main$init = {
 };
 var _henriiik$vlm$Main$onKeyDown = F2(
 	function (c, m) {
-		var _p14 = c;
-		switch (_p14) {
+		var _p13 = c;
+		switch (_p13) {
 			case 16:
 				return _elm_lang$core$Native_Utils.update(
 					m,
@@ -9721,11 +9749,11 @@ var _henriiik$vlm$Main$onKeyDown = F2(
 			case 40:
 				return _henriiik$vlm$Main$cursorDown(m);
 			default:
-				var _p15 = m.mode;
-				switch (_p15.ctor) {
+				var _p14 = m.mode;
+				switch (_p14.ctor) {
 					case 'Insert':
-						var _p16 = c;
-						switch (_p16) {
+						var _p15 = c;
+						switch (_p15) {
 							case 27:
 								return _elm_lang$core$Native_Utils.update(
 									m,
@@ -9739,8 +9767,8 @@ var _henriiik$vlm$Main$onKeyDown = F2(
 								return m;
 						}
 					case 'Visual':
-						var _p17 = c;
-						if (_p17 === 27) {
+						var _p16 = c;
+						if (_p16 === 27) {
 							return _elm_lang$core$Native_Utils.update(
 								m,
 								{mode: _henriiik$vlm$Main$Normal});
@@ -9754,12 +9782,12 @@ var _henriiik$vlm$Main$onKeyDown = F2(
 	});
 var _henriiik$vlm$Main$update = F2(
 	function (msg, model) {
-		var _p18 = msg;
-		switch (_p18.ctor) {
+		var _p17 = msg;
+		switch (_p17.ctor) {
 			case 'KeyDown':
-				var _p19 = _p18._0;
-				var model = A2(_henriiik$vlm$Main$onKeyDown, _p19, model);
-				var log = A3(_henriiik$vlm$Main$newLog, 'down', _p19, model.log);
+				var _p18 = _p17._0;
+				var model = A2(_henriiik$vlm$Main$onKeyDown, _p18, model);
+				var log = A3(_henriiik$vlm$Main$newLog, 'down', _p18, model.log);
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9770,13 +9798,13 @@ var _henriiik$vlm$Main$update = F2(
 			case 'KeyUp':
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_henriiik$vlm$Main$onKeyUp, _p18._0, model),
+					_0: A2(_henriiik$vlm$Main$onKeyUp, _p17._0, model),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
-				var _p20 = _p18._0;
-				var model = A2(_henriiik$vlm$Main$onKeyPress, _p20, model);
-				var log = A3(_henriiik$vlm$Main$newLog, 'press', _p20, model.log);
+				var _p19 = _p17._0;
+				var model = A2(_henriiik$vlm$Main$onKeyPress, _p19, model);
+				var log = A3(_henriiik$vlm$Main$newLog, 'press', _p19, model.log);
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(

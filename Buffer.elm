@@ -1,7 +1,6 @@
 module Buffer
     exposing
         ( Buffer
-        , Selection
         , cut
         , get
         , insert
@@ -16,12 +15,7 @@ module Buffer
 import Array
 import Cursor exposing (Cursor)
 import Line exposing (Line)
-
-
-type alias Selection =
-    { start : Cursor
-    , end : Cursor
-    }
+import Selection exposing (Selection)
 
 
 type alias Buffer =

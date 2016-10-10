@@ -1,4 +1,12 @@
-module Cursor exposing (Cursor, withCol, withRow, cmp)
+module Cursor
+    exposing
+        ( Cursor
+        , withCol
+        , withRow
+        , cmp
+        , left
+        , right
+        )
 
 
 type alias Cursor =
@@ -15,6 +23,26 @@ withCol i c =
 withRow : Int -> Cursor -> Cursor
 withRow i c =
     { c | row = i }
+
+
+left : Cursor -> Cursor
+left cur =
+    { cur | col = cur.col - 1 }
+
+
+right : Cursor -> Cursor
+right cur =
+    { cur | col = cur.col + 1 }
+
+
+up : Cursor -> Cursor
+up cur =
+    { cur | row = cur.row - 1 }
+
+
+down : Cursor -> Cursor
+down cur =
+    { cur | row = cur.row + 1 }
 
 
 cmp : Cursor -> Cursor -> Order
