@@ -559,7 +559,7 @@ onKeyPress c m =
 newLog : String -> KeyCode -> List String -> List String
 newLog a c log =
     log
-        |> List.append [ a ++ ": " ++ (toString c) ++ " - " ++ (fromCode c) ]
+        |> List.append [ a ++ ": " ++ (toString c) ++ " - '" ++ (fromCode c) ++ "'" ]
         |> List.take 10
 
 

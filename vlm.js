@@ -9128,8 +9128,11 @@ var _henriiik$vlm$Main$newLog = F3(
 								_elm_lang$core$Basics$toString(c),
 								A2(
 									_elm_lang$core$Basics_ops['++'],
-									' - ',
-									_henriiik$vlm$Main$fromCode(c)))))
+									' - \'',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										_henriiik$vlm$Main$fromCode(c),
+										'\'')))))
 					]),
 				log));
 	});
