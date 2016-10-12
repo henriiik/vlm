@@ -265,6 +265,16 @@ startSelection m =
     { m | selectionStart = m.cursor }
 
 
+cutSelection : Mode -> Selection -> Buffer -> ( Buffer, Register )
+cutSelection mode sel buf =
+    case mode of
+        VisualLine ->
+            Register.cutLines sel buf
+
+        _ ->
+            Register.cut sel buf
+
+
 deleteSelection : Model -> Model
 deleteSelection m =
     let
@@ -272,13 +282,13 @@ deleteSelection m =
             currentSelection m
 
         ( buf, reg ) =
-            Buffer.cut sel m.buffer
+            cutSelection m.mode sel m.buffer
     in
         { m
             | mode = Normal
             , cursor = sel.start
             , buffer = buf
-            , register = Register.Normal reg
+            , register = reg
         }
 
 
@@ -309,6 +319,11 @@ startVisualMode m =
     startSelection { m | mode = Visual }
 
 
+startVisualLineMode : Model -> Model
+startVisualLineMode m =
+    startSelection { m | mode = VisualLine }
+
+
 startInsertMode : Model -> Model
 startInsertMode m =
     { m | mode = Insert }
@@ -335,7 +350,7 @@ init =
     ( Model
         (Cursor 0 0)
         (Cursor 0 0)
-        (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line" ])
+        (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line", "this is the fourth line", "this is the fifth line", "this is the sixth line", "this is the seventh", "this is the eighth line", "this is the ninth line" ])
         (Register.Line (Array.fromList [ "paste!" ]))
         80
         20
@@ -479,6 +494,10 @@ onKeyPress c m =
                 73 ->
                     cursorStart { m | mode = Insert }
 
+                -- V
+                86 ->
+                    startVisualLineMode m
+
                 -- O
                 79 ->
                     insertLineBefore { m | mode = Insert }
@@ -614,63 +633,74 @@ renderBuffer m =
             ]
             (m.buffer
                 |> Array.slice 0 m.height
-                |> Array.indexedMap (lineMapper m.mode s)
+                |> Array.indexedMap (renderLine m.mode s)
                 |> Array.toList
             )
 
 
-lineMapper : Mode -> Selection -> Int -> Line -> Html Msg
-lineMapper m s row l =
-    if m == Visual && s.start.row <= row && s.end.row >= row then
-        renderLine row l (renderSelection s row l)
-    else
-        renderLine row l (text "")
-
-
-renderLine : Int -> Line -> Html Msg -> Html Msg
-renderLine row l h =
+renderLine : Mode -> Selection -> Int -> Line -> Html Msg
+renderLine m s row l =
     div
         [ (class "line")
         , style [ ( "top", asPx (row * 15) ) ]
         ]
         [ text l
-        , h
+        , (renderSelection m s row l)
         ]
 
 
-renderSelectionStart : Cursor -> Int -> Int
-renderSelectionStart c row =
-    if c.row < row then
-        0
+renderSelectionStart : Mode -> Cursor -> Int -> Int
+renderSelectionStart m c row =
+    case m of
+        VisualLine ->
+            0
+
+        Visual ->
+            if c.row < row then
+                0
+            else
+                c.col
+
+        _ ->
+            0
+
+
+renderSelectionEnd : Mode -> Cursor -> Int -> Line -> Int
+renderSelectionEnd m c row l =
+    case m of
+        VisualLine ->
+            String.length l
+
+        Visual ->
+            if c.row > row then
+                String.length l
+            else
+                c.col
+
+        _ ->
+            0
+
+
+renderSelection : Mode -> Selection -> Int -> Line -> Html Msg
+renderSelection m s row l =
+    if s.start.row > row || s.end.row < row then
+        text ""
     else
-        c.col
+        let
+            start =
+                renderSelectionStart m s.start row
 
-
-renderSelectionEnd : Cursor -> Int -> Line -> Int
-renderSelectionEnd c row l =
-    if c.row > row then
-        String.length l
-    else
-        c.col
-
-
-renderSelection : Selection -> Int -> Line -> Html Msg
-renderSelection s row l =
-    let
-        start =
-            renderSelectionStart s.start row
-
-        width =
-            (renderSelectionEnd s.end row l) - start
-    in
-        div
-            [ class "selection"
-            , style
-                [ ( "left", asPx (start * 9) )
-                , ( "width", asPx (width * 9) )
+            width =
+                (renderSelectionEnd m s.end row l) - start
+        in
+            div
+                [ class "selection"
+                , style
+                    [ ( "left", asPx (start * 9) )
+                    , ( "width", asPx (width * 9) )
+                    ]
                 ]
-            ]
-            []
+                []
 
 
 joinArray : String -> String -> String

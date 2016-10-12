@@ -2,11 +2,15 @@ module Register
     exposing
         ( Register(Normal, Line)
         , insert
+        , cut
+        , cutLines
         )
 
+import Array
 import Buffer exposing (Buffer)
 import Cursor exposing (Cursor)
-import Array
+import Line exposing (Line)
+import Selection exposing (Selection)
 import String
 
 
@@ -43,3 +47,46 @@ insert reg cur buf =
                     Buffer.splitRight cur.row buf
             in
                 ( Array.append (Array.append a b) c, Cursor.withCol 0 cur )
+
+
+cut : Selection -> Buffer -> ( Buffer, Register )
+cut sel buf =
+    if sel.start.row == sel.end.row then
+        let
+            l =
+                Buffer.get sel.start.row buf
+
+            ( ab, c ) =
+                Line.split sel.end.col l
+
+            ( a, b ) =
+                Line.split sel.start.col ab
+        in
+            ( Buffer.set sel.start.row (a ++ c) buf, Normal (Array.repeat 1 b) )
+    else
+        let
+            ( ab, c ) =
+                Buffer.split sel.end buf
+
+            ( a, b ) =
+                Buffer.split sel.start ab
+        in
+            Debug.log "cut" ( Buffer.join a c, Normal b )
+
+
+cutLines : Selection -> Buffer -> ( Buffer, Register )
+cutLines sel buf =
+    let
+        i =
+            sel.end.row + 1
+
+        a =
+            Buffer.splitLeft sel.start.row buf
+
+        b =
+            Array.slice sel.start.row i buf
+
+        c =
+            Buffer.splitRight i buf
+    in
+        Debug.log "cutLines" ( Array.append a c, Line b )

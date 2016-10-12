@@ -1,7 +1,6 @@
 module Buffer
     exposing
         ( Buffer
-        , cut
         , get
         , insert
         , join
@@ -15,7 +14,6 @@ module Buffer
 import Array
 import Cursor exposing (Cursor)
 import Line exposing (Line)
-import Selection exposing (Selection)
 
 
 type alias Buffer =
@@ -84,28 +82,3 @@ join a b =
             (get i a) ++ (get 0 b)
     in
         Array.append (Array.slice 0 -1 a) (set 0 line b)
-
-
-cut : Selection -> Buffer -> ( Buffer, Buffer )
-cut sel buf =
-    if sel.start.row == sel.end.row then
-        let
-            l =
-                get sel.start.row buf
-
-            ( ab, c ) =
-                Line.split sel.end.col l
-
-            ( a, b ) =
-                Line.split sel.start.col ab
-        in
-            ( set sel.start.row (a ++ c) buf, (Array.repeat 1 b) )
-    else
-        let
-            ( ab, c ) =
-                split sel.end buf
-
-            ( a, b ) =
-                split sel.start ab
-        in
-            Debug.log "cut" ( join a c, b )
