@@ -1,13 +1,5 @@
-
 body {
     background: lightgrey;
-    font-family: "Source Code Pro", monospace;
-}
-
-pre {
-    font-size: 15px;
-    line-height: 15px;
-    margin: 0px;
     font-family: "Source Code Pro", monospace;
 }
 
@@ -15,25 +7,33 @@ pre {
     background-color: white;
 }
 
-.cursor, .line, .selection {
+.status,
+.log,
+.cursor,
+.line,
+.selection {
     height: 15px;
-    position: absolute;
     font-size: 15px;
     line-height: 15px;
     margin: 0px;
-    font-family: "Source Code Pro", monospace;
     white-space: pre;
 }
 
-.cursor {
-    background-color: rgba(0,0,0,0.25);
+.cursor,
+.line,
+.selection {
+    position: absolute;
 }
 
-.selection {
-    background-color: rgba(0,0,255,0.25);
-    top: 0px;
+.cursor {
+    background-color: rgba(0, 0, 0, 0.25);
 }
 
 .line {
     left: 0px;
+}
+
+.selection {
+    background-color: rgba(0, 0, 255, 0.25);
+    top: 0px;
 }

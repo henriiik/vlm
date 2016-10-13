@@ -8990,6 +8990,12 @@ var _henriiik$vlm$Register$cut = F2(
 		}
 	});
 
+var _henriiik$vlm$Main$asCh = function (x) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(x),
+		'ch');
+};
 var _henriiik$vlm$Main$asPx = function (x) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
@@ -9044,7 +9050,7 @@ var _henriiik$vlm$Main$cursorWidth = function (m) {
 	if (_p0.ctor === 'Insert') {
 		return '2px';
 	} else {
-		return '9px';
+		return '1ch';
 	}
 };
 var _henriiik$vlm$Main$renderCursor = function (m) {
@@ -9064,7 +9070,7 @@ var _henriiik$vlm$Main$renderCursor = function (m) {
 						{
 						ctor: '_Tuple2',
 						_0: 'left',
-						_1: _henriiik$vlm$Main$asPx(m.cursor.col * 9)
+						_1: _henriiik$vlm$Main$asCh(m.cursor.col)
 					},
 						{
 						ctor: '_Tuple2',
@@ -9125,12 +9131,12 @@ var _henriiik$vlm$Main$renderSelection = F4(
 								{
 								ctor: '_Tuple2',
 								_0: 'left',
-								_1: _henriiik$vlm$Main$asPx(start * 9)
+								_1: _henriiik$vlm$Main$asCh(start)
 							},
 								{
 								ctor: '_Tuple2',
 								_0: 'width',
-								_1: _henriiik$vlm$Main$asPx(width * 9)
+								_1: _henriiik$vlm$Main$asCh(width)
 							}
 							]))
 					]),
@@ -9408,7 +9414,7 @@ var _henriiik$vlm$Main$renderBuffer = function (m) {
 						{
 						ctor: '_Tuple2',
 						_0: 'width',
-						_1: _henriiik$vlm$Main$asPx(m.width * 9)
+						_1: _henriiik$vlm$Main$asCh(m.width)
 					},
 						{
 						ctor: '_Tuple2',
@@ -9441,18 +9447,22 @@ var _henriiik$vlm$Main$view = function (m) {
 				_henriiik$vlm$Main$renderCursor(m),
 				_henriiik$vlm$Main$renderBuffer(m),
 				A2(
-				_elm_lang$html$Html$pre,
+				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
-					[]),
+					[
+						_elm_lang$html$Html_Attributes$class('status')
+					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html$text(
 						_henriiik$vlm$Main$statusBarText(m))
 					])),
 				A2(
-				_elm_lang$html$Html$pre,
+				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
-					[]),
+					[
+						_elm_lang$html$Html_Attributes$class('log')
+					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html$text(
@@ -9778,16 +9788,16 @@ var _henriiik$vlm$Main$onKeyDown = F2(
 				return _henriiik$vlm$Main$motionRight(m);
 			case 40:
 				return _henriiik$vlm$Main$cursorDown(m);
+			case 27:
+				return _elm_lang$core$Native_Utils.update(
+					m,
+					{mode: _henriiik$vlm$Main$Normal});
 			default:
 				var _p17 = m.mode;
 				switch (_p17.ctor) {
 					case 'Insert':
 						var _p18 = c;
 						switch (_p18) {
-							case 27:
-								return _elm_lang$core$Native_Utils.update(
-									m,
-									{mode: _henriiik$vlm$Main$Normal});
 							case 8:
 								return _henriiik$vlm$Main$motionLeft(
 									_henriiik$vlm$Main$deleteCharLeft(m));

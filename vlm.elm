@@ -440,14 +440,14 @@ onKeyDown c m =
         40 ->
             cursorDown m
 
+        -- esc
+        27 ->
+            { m | mode = Normal }
+
         _ ->
             case m.mode of
                 Insert ->
                     case c of
-                        -- esc
-                        27 ->
-                            { m | mode = Normal }
-
                         -- backspace
                         8 ->
                             motionLeft (deleteCharLeft m)
@@ -606,8 +606,8 @@ view m =
         ]
         [ (renderCursor m)
         , (renderBuffer m)
-        , pre [] [ text (statusBarText m) ]
-        , pre [] [ text (renderLog m.log) ]
+        , div [ (class "status") ] [ text (statusBarText m) ]
+        , div [ (class "log") ] [ text (renderLog m.log) ]
         ]
 
 
@@ -627,7 +627,7 @@ renderBuffer m =
         div
             [ (class "buffer")
             , style
-                [ ( "width", asPx (m.width * 9) )
+                [ ( "width", asCh m.width )
                 , ( "height", asPx (m.height * 15) )
                 ]
             ]
@@ -696,8 +696,8 @@ renderSelection m s row l =
             div
                 [ class "selection"
                 , style
-                    [ ( "left", asPx (start * 9) )
-                    , ( "width", asPx (width * 9) )
+                    [ ( "left", asCh start )
+                    , ( "width", asCh width )
                     ]
                 ]
                 []
@@ -714,7 +714,7 @@ renderCursor m =
         [ (class "cursor")
         , style
             [ ( "width", cursorWidth m )
-            , ( "left", asPx (m.cursor.col * 9) )
+            , ( "left", asCh m.cursor.col )
             , ( "top", asPx (m.cursor.row * 15) )
             ]
         ]
@@ -728,7 +728,7 @@ cursorWidth m =
             "2px"
 
         _ ->
-            "9px"
+            "1ch"
 
 
 statusBarText : Model -> String
@@ -753,3 +753,8 @@ cursorStatus s c =
 asPx : Int -> String
 asPx x =
     (toString x) ++ "px"
+
+
+asCh : Int -> String
+asCh x =
+    (toString x) ++ "ch"
