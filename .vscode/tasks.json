@@ -4,6 +4,6 @@
     "version": "0.1.0",
     "command": "elm",
     "isShellCommand": true,
-    "args": ["make", "vlm.elm", "--output", "vlm.js"],
+    "args": ["live", "--", "vlm.elm", "--output", "vlm.js"],
     "showOutput": "always"
 }
