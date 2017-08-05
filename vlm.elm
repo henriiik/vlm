@@ -8,16 +8,16 @@ import Selection exposing (Selection)
 import Register exposing (Register)
 import Line exposing (Line)
 import Html exposing (..)
-import Html.App
+import Html
 import Html.Attributes exposing (style, class)
 import Keyboard exposing (KeyCode)
 import Regex
 import String
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
-    Html.App.program
+    Html.program
         { init = init
         , view = view
         , update = update
@@ -245,8 +245,8 @@ splitLine m =
             Line.split m.cursor.col (currentLine m)
     in
         m
-            |> replaceCurrentLine (fst split)
-            |> insertLineAt (snd split) (m.cursor.row + 1)
+            |> replaceCurrentLine (Tuple.first split)
+            |> insertLineAt (Tuple.second split) (m.cursor.row + 1)
             |> cursorStart
 
 
@@ -378,26 +378,26 @@ update msg model =
     case msg of
         KeyDown code ->
             let
-                model =
+                newModel =
                     onKeyDown code model
 
                 log =
                     newLog "down" code model.log
             in
-                ( { model | log = log }, Cmd.none )
+                ( { newModel | log = log }, Cmd.none )
 
         KeyUp code ->
             ( onKeyUp code model, Cmd.none )
 
         KeyPress code ->
             let
-                model =
+                newModel =
                     onKeyPress code model
 
                 log =
                     newLog "press" code model.log
             in
-                ( { model | log = log }, Cmd.none )
+                ( { newModel | log = log }, Cmd.none )
 
 
 onKeyUp : KeyCode -> Model -> Model

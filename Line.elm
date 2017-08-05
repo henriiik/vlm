@@ -24,7 +24,7 @@ deleteChar i a =
         s =
             split i a
     in
-        (String.dropRight 1 (fst s)) ++ snd s
+        (String.dropRight 1 (Tuple.first s)) ++ Tuple.second s
 
 
 insert : Int -> String -> String -> String
@@ -33,4 +33,4 @@ insert i a b =
         s =
             split i b
     in
-        fst s ++ a ++ snd s
+        Tuple.first s ++ a ++ Tuple.second s
