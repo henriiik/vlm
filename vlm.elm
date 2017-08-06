@@ -733,9 +733,9 @@ cursorWidth m =
 
 statusBarText : Model -> String
 statusBarText m =
-    "--"
+    "-- "
         ++ (toString m.mode)
-        ++ "-- , shift:"
+        ++ " -- , shift:"
         ++ (toString m.shift)
         ++ ", ctrl:"
         ++ (toString m.ctrl)

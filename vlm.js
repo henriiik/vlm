@@ -9339,13 +9339,13 @@ var _henriiik$vlm$Main$cursorStatus = F2(
 var _henriiik$vlm$Main$statusBarText = function (m) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
-		'--',
+		'-- ',
 		A2(
 			_elm_lang$core$Basics_ops['++'],
 			_elm_lang$core$Basics$toString(m.mode),
 			A2(
 				_elm_lang$core$Basics_ops['++'],
-				'-- , shift:',
+				' -- , shift:',
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					_elm_lang$core$Basics$toString(m.shift),
