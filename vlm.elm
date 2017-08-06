@@ -36,11 +36,39 @@ type Mode
     | VisualLine
 
 
+type EditObject
+    = Inner
+    | A
+
+
+type EditCommand
+    = Delete
+    | Change
+    | Yank
+    | Move
+
+
+type EditMotion
+    = Up
+    | Down
+    | Left
+    | Right
+
+
+type alias Edit =
+    { repeat : Maybe Int
+    , command : Maybe EditCommand
+    , object : Maybe EditObject
+    , motion : Maybe EditMotion
+    }
+
+
 type alias Model =
     { cursor : Cursor
     , selectionStart : Cursor
     , buffer : Buffer
     , register : Register
+    , edit : Edit
     , width : Int
     , height : Int
     , log : List String
@@ -352,6 +380,7 @@ init =
         (Cursor 0 0)
         (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line", "this is the fourth line", "this is the fifth line", "this is the sixth line", "this is the seventh", "this is the eighth line", "this is the ninth line" ])
         (Register.Line (Array.fromList [ "paste!" ]))
+        (Edit Nothing Nothing Nothing Nothing)
         80
         20
         [ "this is the log" ]
@@ -377,31 +406,56 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         KeyDown code ->
-            let
-                model =
-                    onKeyDown code model
-
-                log =
-                    newLog "down" code model.log
-            in
-                ( { model | log = log }, Cmd.none )
+            ( model
+                |> doLog "down" code
+                |> doKeyDown code
+            , Cmd.none
+            )
 
         KeyUp code ->
-            ( onKeyUp code model, Cmd.none )
+            ( model
+                |> doKeyUp code
+            , Cmd.none
+            )
 
         KeyPress code ->
-            let
-                model =
-                    onKeyPress code model
-
-                log =
-                    newLog "press" code model.log
-            in
-                ( { model | log = log }, Cmd.none )
+            ( model
+                |> doLog "press" code
+                |> doKeyPress code
+                |> doCmd
+            , Cmd.none
+            )
 
 
-onKeyUp : KeyCode -> Model -> Model
-onKeyUp c m =
+doLog : String -> KeyCode -> Model -> Model
+doLog s c m =
+    { m | log = newLog s c m.log }
+
+
+doCmd : Model -> Model
+doCmd mdl =
+    case mdl.edit.motion of
+        Just Right ->
+            mdl
+                |> motionRight
+                |> resetCmd
+
+        Just Left ->
+            mdl
+                |> motionLeft
+                |> resetCmd
+
+        _ ->
+            mdl
+
+
+resetCmd : Model -> Model
+resetCmd mdl =
+    { mdl | edit = Edit Nothing Nothing Nothing Nothing }
+
+
+doKeyUp : KeyCode -> Model -> Model
+doKeyUp c m =
     case c of
         16 ->
             { m | shift = False }
@@ -416,8 +470,8 @@ onKeyUp c m =
             m
 
 
-onKeyDown : KeyCode -> Model -> Model
-onKeyDown c m =
+doKeyDown : KeyCode -> Model -> Model
+doKeyDown c m =
     case c of
         16 ->
             { m | shift = True }
@@ -472,8 +526,18 @@ onKeyDown c m =
                     m
 
 
-onKeyPress : KeyCode -> Model -> Model
-onKeyPress c m =
+withEditMotion : EditMotion -> Edit -> Edit
+withEditMotion mtn edt =
+    { edt | motion = Just mtn }
+
+
+withEdit : Model -> Edit -> Model
+withEdit mdl edt =
+    { mdl | edit = edt }
+
+
+doKeyPress : KeyCode -> Model -> Model
+doKeyPress c m =
     case m.mode of
         Insert ->
             case c of
@@ -524,7 +588,9 @@ onKeyPress c m =
 
                 -- h
                 104 ->
-                    motionLeft m
+                    m.edit
+                        |> withEditMotion Left
+                        |> withEdit m
 
                 -- i
                 105 ->
@@ -540,7 +606,9 @@ onKeyPress c m =
 
                 -- l
                 108 ->
-                    motionRight m
+                    m.edit
+                        |> withEditMotion Right
+                        |> withEdit m
 
                 -- p
                 112 ->
@@ -743,11 +811,50 @@ statusBarText m =
         ++ (toString m.alt)
         ++ (cursorStatus ", cursor " m.cursor)
         ++ (cursorStatus ", selection " m.selectionStart)
+        ++ ", "
+        ++ (editStatus m.edit)
 
 
 cursorStatus : String -> Cursor -> String
 cursorStatus s c =
     s ++ (toString c.row) ++ ":" ++ (toString c.col)
+
+
+editStatus : Edit -> String
+editStatus edt =
+    (editRepeatStatus edt.repeat)
+        ++ (editCommandStatus edt.command)
+        ++ (editObjectStatus edt.object)
+
+
+editRepeatStatus : Maybe Int -> String
+editRepeatStatus i =
+    i
+        |> Maybe.map toString
+        |> Maybe.withDefault ""
+
+
+editCommandStatus : Maybe EditCommand -> String
+editCommandStatus cmd =
+    case cmd of
+        Just Delete ->
+            "d"
+
+        _ ->
+            ""
+
+
+editObjectStatus : Maybe EditObject -> String
+editObjectStatus obj =
+    case obj of
+        Just Inner ->
+            "i"
+
+        Just A ->
+            "a"
+
+        Nothing ->
+            ""
 
 
 asPx : Int -> String
