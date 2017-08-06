@@ -6,6 +6,8 @@ module Cursor
         , cmp
         , left
         , right
+        , up
+        , down
         )
 
 

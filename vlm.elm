@@ -53,11 +53,12 @@ type EditMotion
     | Down
     | Left
     | Right
+    | Line
 
 
 type alias Edit =
-    { repeat : Maybe Int
-    , command : Maybe EditCommand
+    { repeat : Int
+    , command : EditCommand
     , object : Maybe EditObject
     , motion : Maybe EditMotion
     }
@@ -373,6 +374,22 @@ motionRight m =
         { m | cursor = Cursor.right m.cursor }
 
 
+motionUp : Model -> Model
+motionUp m =
+    if m.cursor.row == 0 then
+        m
+    else
+        { m | cursor = Cursor.up m.cursor }
+
+
+motionDown : Model -> Model
+motionDown m =
+    if m.cursor.row >= m.height - 1 then
+        m
+    else
+        { m | cursor = Cursor.down m.cursor }
+
+
 init : ( Model, Cmd Msg )
 init =
     ( Model
@@ -380,7 +397,7 @@ init =
         (Cursor 0 0)
         (Array.fromList [ "this is the buffer", "this is the second line", "this is the third line", "this is the fourth line", "this is the fifth line", "this is the sixth line", "this is the seventh", "this is the eighth line", "this is the ninth line" ])
         (Register.Line (Array.fromList [ "paste!" ]))
-        (Edit Nothing Nothing Nothing Nothing)
+        (Edit 0 Move Nothing Nothing)
         80
         20
         [ "this is the log" ]
@@ -409,6 +426,7 @@ update msg model =
             ( model
                 |> doLog "down" code
                 |> doKeyDown code
+                |> doCmd
             , Cmd.none
             )
 
@@ -434,6 +452,22 @@ doLog s c m =
 
 doCmd : Model -> Model
 doCmd mdl =
+    if mdl.edit.motion == Nothing then
+        mdl
+    else
+        case mdl.edit.command of
+            Move ->
+                doCmdMove mdl
+
+            Delete ->
+                doCmdDelete mdl
+
+            _ ->
+                mdl
+
+
+doCmdMove : Model -> Model
+doCmdMove mdl =
     case mdl.edit.motion of
         Just Right ->
             mdl
@@ -445,13 +479,58 @@ doCmd mdl =
                 |> motionLeft
                 |> resetCmd
 
+        Just Down ->
+            mdl
+                |> motionDown
+                |> resetCmd
+
+        Just Up ->
+            mdl
+                |> motionUp
+                |> resetCmd
+
+        _ ->
+            mdl
+
+
+doCmdDelete : Model -> Model
+doCmdDelete mdl =
+    case mdl.edit.motion of
+        Just Right ->
+            mdl
+                |> deleteCharRight
+                |> resetCmd
+
+        Just Left ->
+            mdl
+                |> deleteCharLeft
+                |> motionLeft
+                |> resetCmd
+
+        Just Down ->
+            mdl
+                |> removeLineAt mdl.cursor.row
+                |> removeLineAt mdl.cursor.row
+                |> cursorStart
+                |> resetCmd
+
+        Just Up ->
+            mdl
+                |> motionUp
+                |> resetCmd
+
+        Just Line ->
+            mdl
+                |> removeLineAt mdl.cursor.row
+                |> resetCmd
+
         _ ->
             mdl
 
 
 resetCmd : Model -> Model
 resetCmd mdl =
-    { mdl | edit = Edit Nothing Nothing Nothing Nothing }
+    { mdl | edit = Edit 0 Move Nothing Nothing }
 
 
 doKeyUp : KeyCode -> Model -> Model
@@ -483,20 +562,29 @@ doKeyDown c m =
             { m | alt = True }
 
         37 ->
-            motionLeft m
+            m.edit
+                |> withEditMotion Left
+                |> withEdit m
 
         38 ->
-            cursorUp m
+            m.edit
+                |> withEditMotion Up
+                |> withEdit m
 
         39 ->
-            motionRight m
+            m.edit
+                |> withEditMotion Right
+                |> withEdit m
 
         40 ->
-            cursorDown m
+            m.edit
+                |> withEditMotion Down
+                |> withEdit m
 
         -- esc
         27 ->
             { m | mode = Normal }
+                |> resetCmd
 
         _ ->
             case m.mode of
@@ -504,7 +592,9 @@ doKeyDown c m =
                     case c of
                         -- backspace
                         8 ->
-                            motionLeft (deleteCharLeft m)
+                            m
+                                |> deleteCharLeft
+                                |> motionLeft
 
                         -- delete
                         46 ->
@@ -526,16 +616,6 @@ doKeyDown c m =
                     m
 
 
-withEditMotion : EditMotion -> Edit -> Edit
-withEditMotion mtn edt =
-    { edt | motion = Just mtn }
-
-
-withEdit : Model -> Edit -> Model
-withEdit mdl edt =
-    { mdl | edit = edt }
-
-
 doKeyPress : KeyCode -> Model -> Model
 doKeyPress c m =
     case m.mode of
@@ -549,89 +629,125 @@ doKeyPress c m =
                     insertChar c m
 
         _ ->
-            case c of
-                -- A
-                65 ->
-                    cursorEnd { m | mode = Insert }
+            if c >= 48 && c <= 57 then
+                m.edit
+                    |> withEditRepeat (c - 48)
+                    |> withEdit m
+            else
+                case c of
+                    -- A
+                    65 ->
+                        cursorEnd { m | mode = Insert }
 
-                -- I
-                73 ->
-                    cursorStart { m | mode = Insert }
+                    -- I
+                    73 ->
+                        cursorStart { m | mode = Insert }
 
-                -- V
-                86 ->
-                    startVisualLineMode m
+                    -- V
+                    86 ->
+                        startVisualLineMode m
 
-                -- O
-                79 ->
-                    insertLineBefore { m | mode = Insert }
+                    -- O
+                    79 ->
+                        insertLineBefore { m | mode = Insert }
 
-                -- P
-                80 ->
-                    pasteBefore m
+                    -- P
+                    80 ->
+                        pasteBefore m
 
-                -- a
-                97 ->
-                    startInsertMode (motionRight m)
+                    -- a
+                    97 ->
+                        m
+                            |> motionRight
+                            |> startInsertMode
 
-                -- b
-                98 ->
-                    motionWordBack m
+                    -- b
+                    98 ->
+                        motionWordBack m
 
-                -- d
-                100 ->
-                    deleteSelection m
+                    -- d
+                    100 ->
+                        m.edit
+                            |> withEditCmd Delete
+                            |> withEdit m
 
-                -- e
-                101 ->
-                    motionWordEnd m
+                    -- e
+                    101 ->
+                        motionWordEnd m
 
-                -- h
-                104 ->
-                    m.edit
-                        |> withEditMotion Left
-                        |> withEdit m
+                    -- h
+                    104 ->
+                        m.edit
+                            |> withEditMotion Left
+                            |> withEdit m
 
-                -- i
-                105 ->
-                    { m | mode = Insert }
+                    -- i
+                    105 ->
+                        { m | mode = Insert }
 
-                -- j
-                106 ->
-                    cursorDown m
+                    -- j
+                    106 ->
+                        m.edit
+                            |> withEditMotion Down
+                            |> withEdit m
 
-                -- k
-                107 ->
-                    cursorUp m
+                    -- k
+                    107 ->
+                        m.edit
+                            |> withEditMotion Up
+                            |> withEdit m
 
-                -- l
-                108 ->
-                    m.edit
-                        |> withEditMotion Right
-                        |> withEdit m
+                    -- l
+                    108 ->
+                        m.edit
+                            |> withEditMotion Right
+                            |> withEdit m
 
-                -- p
-                112 ->
-                    pasteAfter m
+                    -- p
+                    112 ->
+                        pasteAfter m
 
-                -- o
-                111 ->
-                    insertLineAfter { m | mode = Insert }
+                    -- o
+                    111 ->
+                        insertLineAfter { m | mode = Insert }
 
-                -- v
-                118 ->
-                    startVisualMode m
+                    -- v
+                    118 ->
+                        startVisualMode m
 
-                -- w
-                119 ->
-                    motionWord m
+                    -- w
+                    119 ->
+                        motionWord m
 
-                -- x
-                120 ->
-                    deleteCharRight m
+                    -- x
+                    120 ->
+                        deleteCharRight m
 
-                _ ->
-                    m
+                    _ ->
+                        m
+
+
+withEditMotion : EditMotion -> Edit -> Edit
+withEditMotion mtn edt =
+    { edt | motion = Just mtn }
+
+
+withEditCmd : EditCommand -> Edit -> Edit
+withEditCmd cmd edt =
+    if cmd == Delete && edt.command == Delete then
+        { edt | motion = Just Line }
+    else
+        { edt | command = cmd }
+
+
+withEditRepeat : Int -> Edit -> Edit
+withEditRepeat i edt =
+    { edt | repeat = ((edt.repeat * 10) + i) }
+
+
+withEdit : Model -> Edit -> Model
+withEdit mdl edt =
+    { mdl | edit = edt }
 
 
 newLog : String -> KeyCode -> List String -> List String
@@ -827,17 +943,18 @@ editStatus edt =
         ++ (editObjectStatus edt.object)
 
 
-editRepeatStatus : Maybe Int -> String
+editRepeatStatus : Int -> String
 editRepeatStatus i =
-    i
-        |> Maybe.map toString
-        |> Maybe.withDefault ""
+    if i == 0 then
+        ""
+    else
+        toString i
 
 
-editCommandStatus : Maybe EditCommand -> String
+editCommandStatus : EditCommand -> String
 editCommandStatus cmd =
     case cmd of
-        Just Delete ->
+        Delete ->
             "d"
 
         _ ->
