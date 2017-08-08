@@ -479,7 +479,14 @@ doCmd mdl =
                 doCmdMove mdl
 
             Delete ->
-                doCmdDelete mdl
+                mdl
+                    |> doCmdDelete
+
+            Change ->
+                mdl
+                    |> doCmdDelete
+                    |> insertLineBefore
+                    |> startInsertMode
 
             _ ->
                 mdl
@@ -541,6 +548,7 @@ doCmdDelete mdl =
         Just Line ->
             mdl
                 |> removeLineAt mdl.cursor.row
+                |> cursorStart
                 |> resetCmd
 
         _ ->
@@ -759,7 +767,7 @@ withEditMotion mtn edt =
 
 withEditCmd : EditCommand -> Edit -> Edit
 withEditCmd cmd edt =
-    if cmd == Delete && edt.command == Delete then
+    if cmd == edt.command then
         { edt | motion = Just Line }
     else
         { edt | command = cmd }

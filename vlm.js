@@ -10259,7 +10259,8 @@ var _henriiik$vlm$Main$doCmdDelete = function (mdl) {
 					_henriiik$vlm$Main$motionUp(mdl));
 			default:
 				return _henriiik$vlm$Main$resetCmd(
-					A2(_henriiik$vlm$Main$removeLineAt, mdl.cursor.row, mdl));
+					_henriiik$vlm$Main$cursorStart(
+						A2(_henriiik$vlm$Main$removeLineAt, mdl.cursor.row, mdl)));
 		}
 	} else {
 		return mdl;
@@ -10291,6 +10292,10 @@ var _henriiik$vlm$Main$doCmd = function (mdl) {
 					return _henriiik$vlm$Main$doCmdMove(mdl);
 				case 'Delete':
 					return _henriiik$vlm$Main$doCmdDelete(mdl);
+				case 'Change':
+					return _henriiik$vlm$Main$startInsertMode(
+						_henriiik$vlm$Main$insertLineBefore(
+							_henriiik$vlm$Main$doCmdDelete(mdl)));
 				default:
 					return mdl;
 			}
@@ -10303,7 +10308,7 @@ var _henriiik$vlm$Main$Delete = {ctor: 'Delete'};
 var _henriiik$vlm$Main$Line = {ctor: 'Line'};
 var _henriiik$vlm$Main$withEditCmd = F2(
 	function (cmd, edt) {
-		return (_elm_lang$core$Native_Utils.eq(cmd, _henriiik$vlm$Main$Delete) && _elm_lang$core$Native_Utils.eq(edt.command, _henriiik$vlm$Main$Delete)) ? _elm_lang$core$Native_Utils.update(
+		return _elm_lang$core$Native_Utils.eq(cmd, edt.command) ? _elm_lang$core$Native_Utils.update(
 			edt,
 			{
 				motion: _elm_lang$core$Maybe$Just(_henriiik$vlm$Main$Line)
