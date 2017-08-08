@@ -452,10 +452,19 @@ doLog s c m =
 
 doCmd : Model -> Model
 doCmd mdl =
-    if (mdl.mode == Visual || mdl.mode == VisualLine) && mdl.edit.command == Delete then
-        mdl
-            |> deleteSelection
-            |> resetCmd
+    if mdl.mode == Visual || mdl.mode == VisualLine then
+        case mdl.edit.command of
+            Delete ->
+                mdl
+                    |> deleteSelection
+                    |> resetCmd
+
+            Move ->
+                mdl
+                    |> doCmdMove
+
+            _ ->
+                mdl
     else if mdl.edit.motion == Nothing then
         mdl
     else

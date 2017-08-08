@@ -10265,19 +10265,24 @@ var _henriiik$vlm$Main$doCmdDelete = function (mdl) {
 		return mdl;
 	}
 };
-var _henriiik$vlm$Main$Yank = {ctor: 'Yank'};
-var _henriiik$vlm$Main$Change = {ctor: 'Change'};
-var _henriiik$vlm$Main$Delete = {ctor: 'Delete'};
 var _henriiik$vlm$Main$doCmd = function (mdl) {
-	if ((_elm_lang$core$Native_Utils.eq(mdl.mode, _henriiik$vlm$Main$Visual) || _elm_lang$core$Native_Utils.eq(mdl.mode, _henriiik$vlm$Main$VisualLine)) && _elm_lang$core$Native_Utils.eq(mdl.edit.command, _henriiik$vlm$Main$Delete)) {
-		return _henriiik$vlm$Main$resetCmd(
-			_henriiik$vlm$Main$deleteSelection(mdl));
+	if (_elm_lang$core$Native_Utils.eq(mdl.mode, _henriiik$vlm$Main$Visual) || _elm_lang$core$Native_Utils.eq(mdl.mode, _henriiik$vlm$Main$VisualLine)) {
+		var _p17 = mdl.edit.command;
+		switch (_p17.ctor) {
+			case 'Delete':
+				return _henriiik$vlm$Main$resetCmd(
+					_henriiik$vlm$Main$deleteSelection(mdl));
+			case 'Move':
+				return _henriiik$vlm$Main$doCmdMove(mdl);
+			default:
+				return mdl;
+		}
 	} else {
 		if (_elm_lang$core$Native_Utils.eq(mdl.edit.motion, _elm_lang$core$Maybe$Nothing)) {
 			return mdl;
 		} else {
-			var _p17 = mdl.edit.command;
-			switch (_p17.ctor) {
+			var _p18 = mdl.edit.command;
+			switch (_p18.ctor) {
 				case 'Move':
 					return _henriiik$vlm$Main$doCmdMove(mdl);
 				case 'Delete':
@@ -10288,6 +10293,9 @@ var _henriiik$vlm$Main$doCmd = function (mdl) {
 		}
 	}
 };
+var _henriiik$vlm$Main$Yank = {ctor: 'Yank'};
+var _henriiik$vlm$Main$Change = {ctor: 'Change'};
+var _henriiik$vlm$Main$Delete = {ctor: 'Delete'};
 var _henriiik$vlm$Main$Line = {ctor: 'Line'};
 var _henriiik$vlm$Main$withEditCmd = F2(
 	function (cmd, edt) {
@@ -10305,8 +10313,8 @@ var _henriiik$vlm$Main$Down = {ctor: 'Down'};
 var _henriiik$vlm$Main$Up = {ctor: 'Up'};
 var _henriiik$vlm$Main$doKeyDown = F2(
 	function (c, m) {
-		var _p18 = c;
-		switch (_p18) {
+		var _p19 = c;
+		switch (_p19) {
 			case 16:
 				return _elm_lang$core$Native_Utils.update(
 					m,
@@ -10345,11 +10353,11 @@ var _henriiik$vlm$Main$doKeyDown = F2(
 						m,
 						{mode: _henriiik$vlm$Main$Normal}));
 			default:
-				var _p19 = m.mode;
-				switch (_p19.ctor) {
+				var _p20 = m.mode;
+				switch (_p20.ctor) {
 					case 'Insert':
-						var _p20 = c;
-						switch (_p20) {
+						var _p21 = c;
+						switch (_p21) {
 							case 8:
 								return _henriiik$vlm$Main$motionLeft(
 									_henriiik$vlm$Main$deleteCharLeft(m));
@@ -10359,8 +10367,8 @@ var _henriiik$vlm$Main$doKeyDown = F2(
 								return m;
 						}
 					case 'Visual':
-						var _p21 = c;
-						if (_p21 === 27) {
+						var _p22 = c;
+						if (_p22 === 27) {
 							return _elm_lang$core$Native_Utils.update(
 								m,
 								{mode: _henriiik$vlm$Main$Normal});
@@ -10374,10 +10382,10 @@ var _henriiik$vlm$Main$doKeyDown = F2(
 	});
 var _henriiik$vlm$Main$doKeyPress = F2(
 	function (c, m) {
-		var _p22 = m.mode;
-		if (_p22.ctor === 'Insert') {
-			var _p23 = c;
-			if (_p23 === 13) {
+		var _p23 = m.mode;
+		if (_p23.ctor === 'Insert') {
+			var _p24 = c;
+			if (_p24 === 13) {
 				return _henriiik$vlm$Main$splitLine(m);
 			} else {
 				return A2(_henriiik$vlm$Main$insertChar, c, m);
@@ -10389,8 +10397,8 @@ var _henriiik$vlm$Main$doKeyPress = F2(
 					m,
 					A2(_henriiik$vlm$Main$withEditRepeat, c - 48, m.edit));
 			} else {
-				var _p24 = c;
-				switch (_p24) {
+				var _p25 = c;
+				switch (_p25) {
 					case 65:
 						return _henriiik$vlm$Main$cursorEnd(
 							_elm_lang$core$Native_Utils.update(
@@ -10467,34 +10475,34 @@ var _henriiik$vlm$Main$doKeyPress = F2(
 	});
 var _henriiik$vlm$Main$update = F2(
 	function (msg, model) {
-		var _p25 = msg;
-		switch (_p25.ctor) {
+		var _p26 = msg;
+		switch (_p26.ctor) {
 			case 'KeyDown':
-				var _p26 = _p25._0;
+				var _p27 = _p26._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _henriiik$vlm$Main$doCmd(
 						A2(
 							_henriiik$vlm$Main$doKeyDown,
-							_p26,
-							A3(_henriiik$vlm$Main$doLog, 'down', _p26, model))),
+							_p27,
+							A3(_henriiik$vlm$Main$doLog, 'down', _p27, model))),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'KeyUp':
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_henriiik$vlm$Main$doKeyUp, _p25._0, model),
+					_0: A2(_henriiik$vlm$Main$doKeyUp, _p26._0, model),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
-				var _p27 = _p25._0;
+				var _p28 = _p26._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _henriiik$vlm$Main$doCmd(
 						A2(
 							_henriiik$vlm$Main$doKeyPress,
-							_p27,
-							A3(_henriiik$vlm$Main$doLog, 'press', _p27, model))),
+							_p28,
+							A3(_henriiik$vlm$Main$doLog, 'press', _p28, model))),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}
