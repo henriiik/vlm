@@ -459,6 +459,12 @@ doCmd mdl =
                     |> deleteSelection
                     |> resetCmd
 
+            Change ->
+                mdl
+                    |> deleteSelection
+                    |> resetCmd
+                    |> startInsertMode
+
             Move ->
                 mdl
                     |> doCmdMove
@@ -677,6 +683,12 @@ doKeyPress c m =
                     -- b
                     98 ->
                         motionWordBack m
+
+                    -- c
+                    99 ->
+                        m.edit
+                            |> withEditCmd Change
+                            |> withEdit m
 
                     -- d
                     100 ->

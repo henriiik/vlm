@@ -10272,6 +10272,10 @@ var _henriiik$vlm$Main$doCmd = function (mdl) {
 			case 'Delete':
 				return _henriiik$vlm$Main$resetCmd(
 					_henriiik$vlm$Main$deleteSelection(mdl));
+			case 'Change':
+				return _henriiik$vlm$Main$startInsertMode(
+					_henriiik$vlm$Main$resetCmd(
+						_henriiik$vlm$Main$deleteSelection(mdl)));
 			case 'Move':
 				return _henriiik$vlm$Main$doCmdMove(mdl);
 			default:
@@ -10423,6 +10427,11 @@ var _henriiik$vlm$Main$doKeyPress = F2(
 							_henriiik$vlm$Main$motionRight(m));
 					case 98:
 						return _henriiik$vlm$Main$motionWordBack(m);
+					case 99:
+						return A2(
+							_henriiik$vlm$Main$withEdit,
+							m,
+							A2(_henriiik$vlm$Main$withEditCmd, _henriiik$vlm$Main$Change, m.edit));
 					case 100:
 						return A2(
 							_henriiik$vlm$Main$withEdit,
