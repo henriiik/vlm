@@ -10265,24 +10265,29 @@ var _henriiik$vlm$Main$doCmdDelete = function (mdl) {
 		return mdl;
 	}
 };
-var _henriiik$vlm$Main$doCmd = function (mdl) {
-	if (_elm_lang$core$Native_Utils.eq(mdl.edit.motion, _elm_lang$core$Maybe$Nothing)) {
-		return mdl;
-	} else {
-		var _p17 = mdl.edit.command;
-		switch (_p17.ctor) {
-			case 'Move':
-				return _henriiik$vlm$Main$doCmdMove(mdl);
-			case 'Delete':
-				return _henriiik$vlm$Main$doCmdDelete(mdl);
-			default:
-				return mdl;
-		}
-	}
-};
 var _henriiik$vlm$Main$Yank = {ctor: 'Yank'};
 var _henriiik$vlm$Main$Change = {ctor: 'Change'};
 var _henriiik$vlm$Main$Delete = {ctor: 'Delete'};
+var _henriiik$vlm$Main$doCmd = function (mdl) {
+	if ((_elm_lang$core$Native_Utils.eq(mdl.mode, _henriiik$vlm$Main$Visual) || _elm_lang$core$Native_Utils.eq(mdl.mode, _henriiik$vlm$Main$VisualLine)) && _elm_lang$core$Native_Utils.eq(mdl.edit.command, _henriiik$vlm$Main$Delete)) {
+		return _henriiik$vlm$Main$resetCmd(
+			_henriiik$vlm$Main$deleteSelection(mdl));
+	} else {
+		if (_elm_lang$core$Native_Utils.eq(mdl.edit.motion, _elm_lang$core$Maybe$Nothing)) {
+			return mdl;
+		} else {
+			var _p17 = mdl.edit.command;
+			switch (_p17.ctor) {
+				case 'Move':
+					return _henriiik$vlm$Main$doCmdMove(mdl);
+				case 'Delete':
+					return _henriiik$vlm$Main$doCmdDelete(mdl);
+				default:
+					return mdl;
+			}
+		}
+	}
+};
 var _henriiik$vlm$Main$Line = {ctor: 'Line'};
 var _henriiik$vlm$Main$withEditCmd = F2(
 	function (cmd, edt) {

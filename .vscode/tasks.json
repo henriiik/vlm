@@ -2,8 +2,12 @@
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
     "version": "0.1.0",
-    "command": "elm",
+    "command": "elm-live",
     "isShellCommand": true,
-    "args": ["live", "--", "vlm.elm", "--output", "vlm.js"],
+    "args": [
+        "vlm.elm",
+        "--output",
+        "vlm.js"
+    ],
     "showOutput": "always"
 }
