@@ -10009,13 +10009,14 @@ var _henriiik$vlm$Main$joinLines = function (m) {
 			_henriiik$vlm$Main$cursorUp(m)));
 };
 var _henriiik$vlm$Main$deleteCharLeft = function (m) {
-	return (_elm_lang$core$Native_Utils.eq(m.cursor.col, 0) && (!_elm_lang$core$Native_Utils.eq(m.cursor.row, 0))) ? _henriiik$vlm$Main$joinLines(m) : A2(
-		_henriiik$vlm$Main$replaceCurrentLine,
+	return (_elm_lang$core$Native_Utils.eq(m.cursor.col, 0) && (!_elm_lang$core$Native_Utils.eq(m.cursor.row, 0))) ? _henriiik$vlm$Main$joinLines(m) : _henriiik$vlm$Main$motionLeft(
 		A2(
-			_henriiik$vlm$Line$deleteChar,
-			m.cursor.col,
-			_henriiik$vlm$Main$currentLine(m)),
-		m);
+			_henriiik$vlm$Main$replaceCurrentLine,
+			A2(
+				_henriiik$vlm$Line$deleteChar,
+				m.cursor.col,
+				_henriiik$vlm$Main$currentLine(m)),
+			m));
 };
 var _henriiik$vlm$Main$cursorDown = function (m) {
 	var row = A2(_elm_lang$core$Basics$min, m.cursor.row + 1, m.height - 1);
@@ -10245,8 +10246,7 @@ var _henriiik$vlm$Main$doCmdDelete = function (mdl) {
 					_henriiik$vlm$Main$deleteCharRight(mdl));
 			case 'Left':
 				return _henriiik$vlm$Main$resetCmd(
-					_henriiik$vlm$Main$motionLeft(
-						_henriiik$vlm$Main$deleteCharLeft(mdl)));
+					_henriiik$vlm$Main$deleteCharLeft(mdl));
 			case 'Down':
 				return _henriiik$vlm$Main$resetCmd(
 					_henriiik$vlm$Main$cursorStart(
@@ -10368,8 +10368,7 @@ var _henriiik$vlm$Main$doKeyDown = F2(
 						var _p21 = c;
 						switch (_p21) {
 							case 8:
-								return _henriiik$vlm$Main$motionLeft(
-									_henriiik$vlm$Main$deleteCharLeft(m));
+								return _henriiik$vlm$Main$deleteCharLeft(m);
 							case 46:
 								return _henriiik$vlm$Main$deleteCharRight(m);
 							default:

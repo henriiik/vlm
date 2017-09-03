@@ -225,7 +225,9 @@ deleteCharLeft m =
     if m.cursor.col == 0 && m.cursor.row /= 0 then
         joinLines m
     else
-        replaceCurrentLine (Line.deleteChar m.cursor.col (currentLine m)) m
+        m
+            |> replaceCurrentLine (Line.deleteChar m.cursor.col (currentLine m))
+            |> motionLeft
 
 
 deleteCharRight : Model -> Model
@@ -530,7 +532,6 @@ doCmdDelete mdl =
         Just Left ->
             mdl
                 |> deleteCharLeft
-                |> motionLeft
                 |> resetCmd
 
         Just Down ->
@@ -621,7 +622,6 @@ doKeyDown c m =
                         8 ->
                             m
                                 |> deleteCharLeft
-                                |> motionLeft
 
                         -- delete
                         46 ->
